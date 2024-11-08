@@ -1,0 +1,23 @@
+.App {
+    font-family: Arial, sans-serif;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 20px;
+    background-color: #242424;
+    color: #ffffff;
+}
+
+h1 {
+    color: #ffffff;
+}
+
+.video-grid {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    /* Five videos per row */
+    column-gap: 15px;
+    row-gap: 30px;
+    /* 10px gap between videos */
+    width: 100%;
+}
