@@ -1,28 +1,34 @@
 import React, { useEffect, useRef, useState } from 'react';
 import './VideoItem.css';
 
+import '@vidstack/react/player/styles/default/theme.css';
+import '@vidstack/react/player/styles/default/layouts/video.css';
+
+import { MediaPlayer, MediaProvider } from '@vidstack/react';
+import { defaultLayoutIcons, DefaultVideoLayout } from '@vidstack/react/player/layouts/default';
+
 function capitalizeFirstLetter(str) {
     return str.charAt(0).toUpperCase() + str.slice(1);
 }
 
 function formatDate(dateString) {
     const date = new Date(dateString);
-
     const options = { month: 'short', day: 'numeric', year: 'numeric' };
     return date.toLocaleDateString('en-US', options);
 }
 
 function VideoItem({ video, userIcons }) {
     const containerRef = useRef(null);
-    const videoRef = useRef(null);
-    const [isVisible, setIsVisible] = useState(false);
+    const [isPosterVisible, setIsPosterVisible] = useState(false);
+    const posterPath = `${import.meta.env.BASE_URL}thumb/${video.Filename}.png`;
 
     useEffect(() => {
         const observer = new IntersectionObserver(
             ([entry]) => {
                 if (entry.isIntersecting) {
-                    setIsVisible(true);
-                    observer.unobserve(entry.target);
+                    setIsPosterVisible(true);
+                } else {
+                    setIsPosterVisible(false);
                 }
             },
             { threshold: 0.1 }
@@ -39,41 +45,33 @@ function VideoItem({ video, userIcons }) {
         };
     }, []);
 
-    const handleMouseEnter = () => {
-        if (videoRef.current) {
-            videoRef.current.setAttribute('controls', 'controls');
-        }
-    };
-
-    const handleMouseLeave = () => {
-        if (videoRef.current) {
-            videoRef.current.removeAttribute('controls');
-        }
-    };
-
     const authorIcon = userIcons[video.Poster] || null;
     const authorText = capitalizeFirstLetter(video.Poster.replace(/_/g, ''));
     const dateText = formatDate(video.Date);
 
     return (
         <div className="video-card" ref={containerRef}>
-            <div
-                className="video-wrapper"
-                onMouseEnter={handleMouseEnter}
-                onMouseLeave={handleMouseLeave}
-            >
-                {isVisible ? (
-                    <video ref={videoRef} preload="metadata" className="video-element">
-                        <source src={video.Attachment_URL} type="video/mp4" />
-                        Your browser does not support the video tag.
-                    </video>
+            <div className="video-wrapper">
+                {isPosterVisible ? (
+                    <MediaPlayer
+                        title={video.Filename}
+                        src={video.Attachment_URL}
+                        aspectRatio="16/9"
+                        load="play"
+                        posterLoad="idle"  // Starts loading the poster image sooner
+                        poster={posterPath}
+                        controls={['play', 'progress', 'volume', 'fullscreen']}
+                    >
+                        <MediaProvider />
+                        <DefaultVideoLayout icons={defaultLayoutIcons} />
+                    </MediaPlayer>
                 ) : (
                     <div className="video-placeholder">
                         <p>Loading...</p>
                     </div>
                 )}
             </div>
-            <div className='video-subtext'>
+            <div className="video-subtext">
                 {authorIcon && (
                     <img
                         src={authorIcon}

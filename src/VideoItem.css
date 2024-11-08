@@ -4,23 +4,17 @@
     color: #ffffff;
     display: flex;
     flex-direction: column;
-    flex-basis: calc(20% - 1rem);
-    /* Take 20% width, with a small gap */
+    flex-basis: calc(20% - 2rem);
     min-width: 200px;
-    /* Prevent the card from becoming too small */
     max-width: 500px;
-    /* Optional: limit maximum size if needed */
-    margin: .1rem;
-    /* Use rem for consistent spacing */
+    margin: 0.5rem;
     font-size: 1rem;
-    /* Responsive font size */
 }
 
 .video-wrapper {
     position: relative;
     width: 100%;
-    padding-top: 56.25%;
-    /* 16:9 Aspect Ratio */
+    aspect-ratio: 16 / 9;
     background-color: #000;
     overflow: hidden;
     border-radius: 12px;
@@ -79,35 +73,4 @@
 
 .video-subtext p:last-child {
     text-align: right;
-}
-
-/* Hide controls by default */
-.video-element::-webkit-media-controls,
-.video-element::-moz-media-controls {
-    display: none !important;
-}
-
-/* Show controls on hover */
-.video-card:hover .video-element::-webkit-media-controls,
-.video-card:hover .video-element::-moz-media-controls {
-    display: block !important;
-}
-
-.next-button {
-    position: absolute;
-    top: 50%;
-    right: 1rem;
-    transform: translateY(-50%);
-    padding: 0.5rem 1rem;
-    background-color: rgba(0, 0, 0, 0.6);
-    color: #fff;
-    border: none;
-    border-radius: 4px;
-    font-size: 1rem;
-    cursor: pointer;
-    z-index: 10;
-}
-
-.next-button:hover {
-    background-color: rgba(0, 0, 0, 0.8);
 }

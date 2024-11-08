@@ -5,11 +5,9 @@ import './App.css';
 function App() {
     const [videos, setVideos] = useState([]);
     const [userIcons, setUserIcons] = useState({});
-    const [currentVideoIndex, setCurrentVideoIndex] = useState(null); // Track the current video in fullscreen
 
-    // Fetch json data
+    // Fetch JSON data for videos and user icons
     useEffect(() => {
-        // Fetch the videos data
         fetch(`${import.meta.env.BASE_URL}filtered_messages.json`)
             .then((response) => response.json())
             .then((data) => setVideos(data))
@@ -17,7 +15,6 @@ function App() {
     }, []);
 
     useEffect(() => {
-        // Fetch the user icons data
         fetch(`${import.meta.env.BASE_URL}user_icons.json`)
             .then((response) => response.json())
             .then((data) => setUserIcons(data))
@@ -28,9 +25,9 @@ function App() {
         <div className="App">
             <div className="video-grid">
                 {videos.length > 0 ? (
-                    videos.map((video, index) => (
+                    videos.map((video) => (
                         <VideoItem
-                            key={index}
+                            key={video.Attachment_URL}
                             video={video}
                             userIcons={userIcons}
                         />
