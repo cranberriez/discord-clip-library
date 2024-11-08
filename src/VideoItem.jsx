@@ -2,10 +2,8 @@ import React, { useEffect, useRef, useState } from 'react';
 import './VideoItem.css';
 
 import '@vidstack/react/player/styles/default/theme.css';
-import '@vidstack/react/player/styles/default/layouts/video.css';
 
 import { MediaPlayer, MediaProvider } from '@vidstack/react';
-import { defaultLayoutIcons, DefaultVideoLayout } from '@vidstack/react/player/layouts/default';
 
 function capitalizeFirstLetter(str) {
     return str.charAt(0).toUpperCase() + str.slice(1);
@@ -57,11 +55,9 @@ function VideoItem({ video, userIcons }) {
                         aspectRatio="16/9"
                         load="play"
                         controls={['play', 'progress', 'volume', 'fullscreen']}
-                        poster={posterPath}  // Set the poster attribute here
+                        poster={posterPath}
                     >
-                        {/* This MediaProvider will handle rendering the video element */}
                         <MediaProvider />
-                        <DefaultVideoLayout icons={defaultLayoutIcons} />
                     </MediaPlayer>
                 ) : (
                     <div className="video-placeholder">
