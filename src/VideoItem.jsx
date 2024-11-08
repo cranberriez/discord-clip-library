@@ -20,15 +20,15 @@ function formatDate(dateString) {
 function VideoItem({ video, userIcons }) {
     const containerRef = useRef(null);
     const [isPosterVisible, setIsPosterVisible] = useState(false);
+    const [hasLoaded, setHasLoaded] = useState(false);
     const posterPath = `${import.meta.env.BASE_URL}thumb/${video.Filename}.png`;
 
     useEffect(() => {
         const observer = new IntersectionObserver(
             ([entry]) => {
-                if (entry.isIntersecting) {
+                if (entry.isIntersecting && !hasLoaded) {
                     setIsPosterVisible(true);
-                } else {
-                    setIsPosterVisible(false);
+                    setHasLoaded(true);
                 }
             },
             { threshold: 0.1 }
@@ -39,11 +39,9 @@ function VideoItem({ video, userIcons }) {
         }
 
         return () => {
-            if (containerRef.current) {
-                observer.unobserve(containerRef.current);
-            }
+            observer.disconnect();
         };
-    }, []);
+    }, [hasLoaded]);
 
     const authorIcon = userIcons[video.Poster] || null;
     const authorText = capitalizeFirstLetter(video.Poster.replace(/_/g, ''));
@@ -58,10 +56,10 @@ function VideoItem({ video, userIcons }) {
                         src={video.Attachment_URL}
                         aspectRatio="16/9"
                         load="play"
-                        posterLoad="idle"  // Starts loading the poster image sooner
-                        poster={posterPath}
                         controls={['play', 'progress', 'volume', 'fullscreen']}
+                        poster={posterPath}  // Set the poster attribute here
                     >
+                        {/* This MediaProvider will handle rendering the video element */}
                         <MediaProvider />
                         <DefaultVideoLayout icons={defaultLayoutIcons} />
                     </MediaPlayer>
