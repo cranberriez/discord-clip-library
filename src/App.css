@@ -3,21 +3,25 @@
     display: flex;
     flex-direction: column;
     align-items: center;
-    padding: 20px;
+    padding: 2rem 1rem;
     background-color: #242424;
     color: #ffffff;
 }
 
 h1 {
     color: #ffffff;
+    font-size: 2%;
+    /* Use rem units for scalable font size */
 }
 
 .video-grid {
-    display: grid;
-    grid-template-columns: repeat(5, 1fr);
-    /* Five videos per row */
-    column-gap: 15px;
-    row-gap: 30px;
-    /* 10px gap between videos */
+    display: flex;
+    flex-wrap: wrap;
+    /* Wraps videos to next line when they overflow */
+    gap: 1em;
+    row-gap: 3em;
+    /* Adds gap between videos */
+    justify-content: center;
+    /* Center the videos */
     width: 100%;
 }
