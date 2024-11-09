@@ -16,21 +16,14 @@ function formatDate(dateString) {
 function VideoItem({ video, userIcons, selectedUser }) {
     const containerRef = useRef(null);
     const [isPosterVisible, setIsPosterVisible] = useState(false);
-    const [hasLoaded, setHasLoaded] = useState(false);
     const posterPath = `${import.meta.env.BASE_URL}thumb/${video.Filename}.png`;
 
     useEffect(() => {
-        // Reset load state when selectedUser changes
-        setIsPosterVisible(false);
-        setHasLoaded(false);
-    }, [selectedUser]);
-
-    useEffect(() => {
+        setIsPosterVisible(false); // Reset visibility on selectedUser change
         const observer = new IntersectionObserver(
             ([entry]) => {
-                if (entry.isIntersecting && !hasLoaded) {
+                if (entry.isIntersecting) {
                     setIsPosterVisible(true);
-                    setHasLoaded(true);
                 }
             },
             { threshold: 0.1 }
@@ -41,9 +34,12 @@ function VideoItem({ video, userIcons, selectedUser }) {
         }
 
         return () => {
-            observer.disconnect();
+            if (containerRef.current) {
+                observer.unobserve(containerRef.current);
+            }
+            observer.disconnect(); // Cleanup observer on unmount
         };
-    }, [hasLoaded]);
+    }, [selectedUser]); // Re-run when selectedUser changes
 
     const authorIcon = userIcons[video.Poster] || null;
     const authorText = capitalizeFirstLetter(video.Poster.replace(/_/g, ''));
