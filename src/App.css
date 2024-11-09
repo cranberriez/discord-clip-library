@@ -21,7 +21,7 @@ h1 {
     gap: 1em;
     row-gap: 3em;
     /* Adds gap between videos */
-    justify-content: center;
+    justify-content: space-between;
     /* Center the videos */
     width: 100%;
     margin-top: 5rem;

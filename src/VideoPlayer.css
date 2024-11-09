@@ -1,0 +1,71 @@
+.video-player-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background-color: rgba(0, 0, 0, 0.9);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 1rem;
+    z-index: 1000;
+    overflow: hidden;
+    padding: 1rem;
+}
+
+.video-player {
+    width: 100%;
+    max-width: 95vw;
+    /* Ensure it doesn't exceed viewport width */
+    max-height: 95vh;
+    /* Ensure it doesn't exceed viewport height */
+    background-color: #000;
+    border-radius: 12px;
+    outline: 0;
+}
+
+/* Optional controls styling retained for future use */
+.video-controls {
+    height: 100%;
+
+    padding: .2rem;
+    display: flex;
+    align-items: center;
+    flex-direction: column;
+    z-index: 99;
+
+    border-radius: 4px;
+    gap: 1rem;
+}
+
+.video-controls .author-icon {
+    margin-right: 0;
+}
+
+.video-ctrl-btn {
+    font-size: 1rem;
+    color: #8e8e8e;
+    background-color: #111;
+    border-radius: 4px;
+    padding: 1rem;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+}
+
+.video-ctrl-btn:hover {
+    color: #dcdcdc;
+    background-color: #222;
+}
+
+.vcb-top-div {
+    margin-bottom: auto;
+}
+
+.vcb-bot-div {
+    margin-top: auto;
+}
+
+.back-button:hover {
+    background-color: rgba(255, 255, 255, 0.2);
+}

@@ -18,19 +18,22 @@
     background-color: #000;
     overflow: hidden;
     border-radius: 12px;
+    cursor: pointer;
 }
 
-.video-element,
+.video-thumbnail {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    /* Scale image to cover the entire container */
+}
+
 .video-placeholder {
     position: absolute;
     top: 0;
     left: 0;
     width: 100%;
     height: 100%;
-    object-fit: cover;
-}
-
-.video-placeholder {
     display: flex;
     align-items: center;
     justify-content: center;
@@ -40,7 +43,6 @@
 .video-placeholder p {
     color: #fff;
     font-size: 1rem;
-    /* Scale font size consistently */
 }
 
 .video-subtext {
@@ -48,14 +50,12 @@
     align-items: center;
     margin-top: 0.5rem;
     font-size: 1rem;
-    /* Scale text with rem units */
     padding: 0 1rem;
     position: relative;
 }
 
 .author-icon {
     width: 2.5rem;
-    /* Use rem for consistent scaling */
     height: 2.5rem;
     border-radius: 50%;
     margin-right: 0.5rem;

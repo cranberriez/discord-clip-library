@@ -1,6 +1,4 @@
 import React, { useEffect, useRef, useState } from 'react';
-import '@vidstack/react/player/styles/default/theme.css';
-import { MediaPlayer, MediaProvider } from '@vidstack/react';
 import './VideoItem.css';
 
 function capitalizeFirstLetter(str) {
@@ -13,13 +11,14 @@ function formatDate(dateString) {
     return date.toLocaleDateString('en-US', options);
 }
 
-function VideoItem({ video, userIcons, selectedUser }) {
+function VideoItem({ video, userIcons, selectedUser, onClick }) {
     const containerRef = useRef(null);
     const [isPosterVisible, setIsPosterVisible] = useState(false);
     const posterPath = `${import.meta.env.BASE_URL}thumb/${video.Filename}.png`;
 
     useEffect(() => {
-        setIsPosterVisible(false); // Reset visibility on selectedUser change
+        setIsPosterVisible(false);
+
         const observer = new IntersectionObserver(
             ([entry]) => {
                 if (entry.isIntersecting) {
@@ -37,9 +36,9 @@ function VideoItem({ video, userIcons, selectedUser }) {
             if (containerRef.current) {
                 observer.unobserve(containerRef.current);
             }
-            observer.disconnect(); // Cleanup observer on unmount
+            observer.disconnect();
         };
-    }, [selectedUser]); // Re-run when selectedUser changes
+    }, [selectedUser]);
 
     const authorIcon = userIcons[video.Poster] || null;
     const authorText = capitalizeFirstLetter(video.Poster.replace(/_/g, ''));
@@ -48,19 +47,10 @@ function VideoItem({ video, userIcons, selectedUser }) {
 
     return (
         isCurSelectedUser ? (
-            <div className="video-card" ref={containerRef}>
-                <div className="video-wrapper">
+            <div className="video-card" ref={containerRef} >
+                <div className="video-wrapper" onClick={() => onClick(video)}>
                     {isPosterVisible ? (
-                        <MediaPlayer
-                            title={video.Filename}
-                            src={video.Attachment_URL}
-                            aspectRatio="16/9"
-                            load="play"
-                            controls={['play', 'progress', 'volume', 'fullscreen']}
-                            poster={posterPath}
-                        >
-                            <MediaProvider />
-                        </MediaPlayer>
+                        <img src={posterPath} alt={`${video.Filename} thumbnail`} className="video-thumbnail" />
                     ) : (
                         <div className="video-placeholder">
                             <p>Loading...</p>
