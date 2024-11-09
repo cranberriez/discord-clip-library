@@ -4,11 +4,17 @@ import UserSelector from './UserSelector';
 import VideoPlayer from './VideoPlayer';
 import './App.css';
 
+function extractLastNumber(url) {
+    const parts = url.split('/');
+    return parts[parts.length - 1];
+}
+
 function App() {
     const [videos, setVideos] = useState([]);
     const [userIcons, setUserIcons] = useState({});
     const [selectedUser, setSelectedUser] = useState(null);
     const [activeVideo, setActiveVideo] = useState(null);
+    const [clipId, setClipId] = useState(null);
 
     // Fetch JSON data for videos and user icons
     useEffect(() => {
@@ -25,13 +31,23 @@ function App() {
             .catch((error) => console.error("Error loading user icons:", error));
     }, []);
 
-    // Toggle overflow on body based on active video
+    // Toggle overflow on body based on active video, and set active video
     useEffect(() => {
         document.body.style.overflow = activeVideo ? 'hidden' : 'auto';
+        if (activeVideo) {
+            setClipId(extractLastNumber(activeVideo.Link_to_message))
+        }
         return () => {
             document.body.style.overflow = 'auto'; // Reset on cleanup
         };
     }, [activeVideo]);
+
+
+    // Scroll to `clip` query param in URL
+    useEffect(() => {
+        const params = new URLSearchParams(window.location.search);
+        setClipId(params.get('clip'));
+    }, []);
 
     // Determine the next and previous videos based on activeVideo and selectedUser
     const filteredVideos = selectedUser
@@ -63,6 +79,7 @@ function App() {
                             video={video}
                             userIcons={userIcons}
                             selectedUser={selectedUser}
+                            clipId={clipId}
                             onClick={setActiveVideo} // Set active video when clicked
                         />
                     ))

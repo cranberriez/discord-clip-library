@@ -3,7 +3,10 @@ import '@vidstack/react/player/styles/default/theme.css';
 import './VideoPlayer.css';
 
 import { MediaPlayer, MediaProvider, Title, useMediaStore } from '@vidstack/react';
-import { XMarkIcon, ArrowRightIcon, ArrowLeftIcon, RepeatSquareIcon, PlaybackSpeedCircleIcon, ShareArrowIcon } from '@vidstack/react/icons';
+import { XMarkIcon, ArrowRightIcon, ArrowLeftIcon, RepeatSquareIcon, PlaybackSpeedCircleIcon, LinkIcon } from '@vidstack/react/icons';
+
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faDiscord } from '@fortawesome/free-brands-svg-icons';
 
 function formatString(str) {
     return str
@@ -11,6 +14,11 @@ function formatString(str) {
         .replace(".mp4", "")
         .replace(/_/g, ' ')
         .replace(/\b\w/g, (char) => char.toUpperCase());
+}
+
+function extractLastNumber(url) {
+    const parts = url.split('/');
+    return parts[parts.length - 1];
 }
 
 function VideoPlayer({ video, onClose, onNext, onPrevious, userIcons }) {
@@ -24,6 +32,7 @@ function VideoPlayer({ video, onClose, onNext, onPrevious, userIcons }) {
     if (!video) return null;
     const authorIcon = userIcons[video.Poster] || null;
     const title = formatString(video.Filename)
+    const vidID = extractLastNumber(video.Link_to_message)
 
     useEffect(() => {
         const handleKeyPress = (event) => {
@@ -83,9 +92,33 @@ function VideoPlayer({ video, onClose, onNext, onPrevious, userIcons }) {
         if (autoplay) {
             setTimeout(() => {
                 onNext()
-            }, 200)
+            }, 500)
         }
     }
+
+    const copyToClipboard = (text) => {
+        // Remove any existing query parameters
+        const baseUrl = window.location.origin + window.location.pathname;
+        const urlWithText = `${baseUrl}${text}`;
+
+        navigator.clipboard.writeText(urlWithText)
+            .catch((err) => {
+                console.error("Failed to copy: ", err);
+            });
+    };
+
+
+    const animateClick = (event) => {
+        const button = event.currentTarget; // Reference to the button itself
+        button.classList.add("animate");
+
+        // Remove the 'animate' class after the animation completes
+        setTimeout(() => {
+            button.classList.remove("animate");
+        }, 300); // Match this duration to the animation duration
+
+        copyToClipboard(`?clip=${vidID}`);
+    };
 
     return (
         <div className="video-player-overlay">
@@ -117,19 +150,33 @@ function VideoPlayer({ video, onClose, onNext, onPrevious, userIcons }) {
                 style={{ height: dimensions.height }}
             >
                 <button className="video-ctrl-btn vcb-top-div" onClick={onClose}><XMarkIcon size={32} /></button>
+
                 <button className="video-ctrl-btn" onClick={onNext}><ArrowRightIcon size={32} /></button>
                 <button className="video-ctrl-btn" onClick={onPrevious}><ArrowLeftIcon size={32} /></button>
+                <button className='video-ctrl-btn' onClick={() => setAutoplay(prev => !prev)}>
+                    {!autoplay && <RepeatSquareIcon size={32} />}
+                    {autoplay && <PlaybackSpeedCircleIcon size={32} />}
+                </button>
 
                 {authorIcon && <img
                     src={authorIcon}
                     alt={`${video.Poster}'s icon`}
                     className="author-icon vcb-bot-div"
                 />}
-                <button className='video-ctrl-btn' onClick={() => setAutoplay(prev => !prev)}>
-                    {!autoplay && <RepeatSquareIcon size={32} />}
-                    {autoplay && <PlaybackSpeedCircleIcon size={32} />}
-                </button>
-                {/* <button className="video-ctrl-btn">?</button> */}
+
+                <button
+                    className="video-ctrl-btn cpy-btn"
+                    onClick={(event) => {
+                        copyToClipboard(`?clip=${vidID}`)
+                        animateClick(event)
+                    }}
+                ><LinkIcon size={32} /></button>
+
+                <a href={video.Link_to_message} target="_blank"><button className="video-ctrl-btn">
+                    <FontAwesomeIcon icon={faDiscord} className="icon" style={{ width: "32px", height: "32px" }} />
+                </button></a>
+
+
                 {/* <ShareArrowIcon size={32} /> */}
             </div>
         </div >

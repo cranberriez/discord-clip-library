@@ -11,6 +11,13 @@
     font-size: 1rem;
 }
 
+.video-card.active .video-wrapper {
+    border: 3px solid #5bda66;
+    box-shadow:
+        0 8px 16px rgba(91, 218, 102, 0.3),
+        0 4px 8px rgba(91, 218, 102, 0.4);
+}
+
 .video-wrapper {
     position: relative;
     width: 100%;

@@ -61,7 +61,7 @@
     border-radius: 4px;
     padding: 1rem;
     cursor: pointer;
-    transition: background-color 0.2s ease;
+    transition: background-color 0.3s ease;
 }
 
 .video-ctrl-btn:hover {
@@ -84,4 +84,25 @@
 .video-provider:focus,
 video:focus {
     outline: 0;
+}
+
+@keyframes clickEffect {
+    0% {
+        background-color: #5bda66;
+        color: #000;
+    }
+
+    30% {
+        background-color: #5bda66;
+        color: #000;
+    }
+
+    100% {
+        background-color: #111;
+        color: #8e8e8e;
+    }
+}
+
+.video-ctrl-btn.cpy-btn.animate {
+    animation: clickEffect 0.5s ease;
 }
