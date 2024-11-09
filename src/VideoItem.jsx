@@ -1,9 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
-import './VideoItem.css';
-
 import '@vidstack/react/player/styles/default/theme.css';
-
 import { MediaPlayer, MediaProvider } from '@vidstack/react';
+import './VideoItem.css';
 
 function capitalizeFirstLetter(str) {
     return str.charAt(0).toUpperCase() + str.slice(1);
