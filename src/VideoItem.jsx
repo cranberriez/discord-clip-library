@@ -13,11 +13,17 @@ function formatDate(dateString) {
     return date.toLocaleDateString('en-US', options);
 }
 
-function VideoItem({ video, userIcons }) {
+function VideoItem({ video, userIcons, selectedUser }) {
     const containerRef = useRef(null);
     const [isPosterVisible, setIsPosterVisible] = useState(false);
     const [hasLoaded, setHasLoaded] = useState(false);
     const posterPath = `${import.meta.env.BASE_URL}thumb/${video.Filename}.png`;
+
+    useEffect(() => {
+        // Reset load state when selectedUser changes
+        setIsPosterVisible(false);
+        setHasLoaded(false);
+    }, [selectedUser]);
 
     useEffect(() => {
         const observer = new IntersectionObserver(
@@ -42,39 +48,42 @@ function VideoItem({ video, userIcons }) {
     const authorIcon = userIcons[video.Poster] || null;
     const authorText = capitalizeFirstLetter(video.Poster.replace(/_/g, ''));
     const dateText = formatDate(video.Date);
+    const isCurSelectedUser = video.Poster === selectedUser || selectedUser === null;
 
     return (
-        <div className="video-card" ref={containerRef}>
-            <div className="video-wrapper">
-                {isPosterVisible ? (
-                    <MediaPlayer
-                        title={video.Filename}
-                        src={video.Attachment_URL}
-                        aspectRatio="16/9"
-                        load="play"
-                        controls={['play', 'progress', 'volume', 'fullscreen']}
-                        poster={posterPath}
-                    >
-                        <MediaProvider />
-                    </MediaPlayer>
-                ) : (
-                    <div className="video-placeholder">
-                        <p>Loading...</p>
-                    </div>
-                )}
+        isCurSelectedUser ? (
+            <div className="video-card" ref={containerRef}>
+                <div className="video-wrapper">
+                    {isPosterVisible ? (
+                        <MediaPlayer
+                            title={video.Filename}
+                            src={video.Attachment_URL}
+                            aspectRatio="16/9"
+                            load="play"
+                            controls={['play', 'progress', 'volume', 'fullscreen']}
+                            poster={posterPath}
+                        >
+                            <MediaProvider />
+                        </MediaPlayer>
+                    ) : (
+                        <div className="video-placeholder">
+                            <p>Loading...</p>
+                        </div>
+                    )}
+                </div>
+                <div className="video-subtext">
+                    {authorIcon && (
+                        <img
+                            src={authorIcon}
+                            alt={`${video.Poster}'s icon`}
+                            className="author-icon"
+                        />
+                    )}
+                    <p className="author-text">{authorText}</p>
+                    <p className="date">{dateText}</p>
+                </div>
             </div>
-            <div className="video-subtext">
-                {authorIcon && (
-                    <img
-                        src={authorIcon}
-                        alt={`${video.Poster}'s icon`}
-                        className="author-icon"
-                    />
-                )}
-                <p className="author-text">{authorText}</p>
-                <p className="date">{dateText}</p>
-            </div>
-        </div>
+        ) : null
     );
 }
 

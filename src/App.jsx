@@ -1,10 +1,12 @@
 import React, { useEffect, useState } from 'react';
 import VideoItem from './VideoItem';
+import UserSelector from './UserSelector';
 import './App.css';
 
 function App() {
     const [videos, setVideos] = useState([]);
     const [userIcons, setUserIcons] = useState({});
+    const [selectedUser, setSelectedUser] = useState(null)
 
     // Fetch JSON data for videos and user icons
     useEffect(() => {
@@ -23,6 +25,7 @@ function App() {
 
     return (
         <div className="App">
+            <UserSelector userIcons={userIcons} selectedUser={selectedUser} setSelectedUser={setSelectedUser} />
             <div className="video-grid">
                 {videos.length > 0 ? (
                     videos.map((video) => (
@@ -30,6 +33,7 @@ function App() {
                             key={video.Attachment_URL}
                             video={video}
                             userIcons={userIcons}
+                            selectedUser={selectedUser}
                         />
                     ))
                 ) : (
