@@ -3,7 +3,7 @@ import '@vidstack/react/player/styles/default/theme.css';
 import './VideoPlayer.css';
 
 import { MediaPlayer, MediaProvider, Title, useMediaStore } from '@vidstack/react';
-import { XMarkIcon, ArrowRightIcon, ArrowLeftIcon, ShareArrowIcon } from '@vidstack/react/icons';
+import { XMarkIcon, ArrowRightIcon, ArrowLeftIcon, RepeatSquareIcon, PlaybackSpeedCircleIcon, ShareArrowIcon } from '@vidstack/react/icons';
 
 function formatString(str) {
     return str
@@ -17,12 +17,36 @@ function VideoPlayer({ video, onClose, onNext, onPrevious, userIcons }) {
     const [dimensions, setDimensions] = useState({ width: 0, height: 0 });
     const [volume, setVolume] = useState(0.2); // Default volume
     const [muted, setMuted] = useState(false); // Default muted status
+    const [autoplay, setAutoplay] = useState(false); // Default autoplay, continue playing the next video on video complete
     const mediaPlayerRef = useRef(null);
     const mediaStore = useMediaStore(mediaPlayerRef);
 
     if (!video) return null;
     const authorIcon = userIcons[video.Poster] || null;
     const title = formatString(video.Filename)
+
+    useEffect(() => {
+        const handleKeyPress = (event) => {
+            switch (event.key) {
+                case 'Escape':
+                    onClose()
+                    break;
+                case 'd':
+                    onNext()
+                    break;
+                case 'a':
+                    onPrevious()
+                    break;
+                default:
+                    break;
+            }
+        };
+        window.addEventListener('keydown', handleKeyPress);
+
+        return () => {
+            window.removeEventListener('keydown', handleKeyPress);
+        };
+    }, [onClose, onNext, onPrevious]);
 
     useEffect(() => {
         // Function to update width and height based on the 16:9 ratio
@@ -55,6 +79,14 @@ function VideoPlayer({ video, onClose, onNext, onPrevious, userIcons }) {
         setMuted(muted)
     }
 
+    const onEnded = () => {
+        if (autoplay) {
+            setTimeout(() => {
+                onNext()
+            }, 200)
+        }
+    }
+
     return (
         <div className="video-player-overlay">
             <MediaPlayer
@@ -73,8 +105,9 @@ function VideoPlayer({ video, onClose, onNext, onPrevious, userIcons }) {
                 style={{ width: dimensions.width, height: dimensions.height }}
 
                 onVolumeChange={onVolumeChange}
+                onEnded={onEnded}
             >
-                <MediaProvider />
+                <MediaProvider className='video-provider' />
                 <Title
                     className='video-player-title'
                 />
@@ -92,6 +125,10 @@ function VideoPlayer({ video, onClose, onNext, onPrevious, userIcons }) {
                     alt={`${video.Poster}'s icon`}
                     className="author-icon vcb-bot-div"
                 />}
+                <button className='video-ctrl-btn' onClick={() => setAutoplay(prev => !prev)}>
+                    {!autoplay && <RepeatSquareIcon size={32} />}
+                    {autoplay && <PlaybackSpeedCircleIcon size={32} />}
+                </button>
                 {/* <button className="video-ctrl-btn">?</button> */}
                 {/* <ShareArrowIcon size={32} /> */}
             </div>

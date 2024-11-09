@@ -25,6 +25,15 @@
     outline: 0;
 }
 
+.video-player-title {
+    position: absolute;
+    top: -1.6rem;
+    left: 50%;
+    transform: translate(-50%, 0);
+    font-size: 1.2rem;
+}
+
+
 /* Optional controls styling retained for future use */
 .video-controls {
     height: 100%;
@@ -41,6 +50,8 @@
 
 .video-controls .author-icon {
     margin-right: 0;
+    scale: 1.5;
+    margin-bottom: 1rem;
 }
 
 .video-ctrl-btn {
@@ -68,4 +79,9 @@
 
 .back-button:hover {
     background-color: rgba(255, 255, 255, 0.2);
+}
+
+.video-provider:focus,
+video:focus {
+    outline: 0;
 }
