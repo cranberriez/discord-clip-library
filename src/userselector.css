@@ -1,12 +1,7 @@
 .player-selector {
-    width: 100%;
     display: flex;
-    justify-content: center;
-    background-color: #242424;
-    position: fixed;
+    justify-content: flex-start;
     gap: 2rem;
-    z-index: 2;
-    padding: 1rem 0;
 }
 
 .player-selector .player {
@@ -22,6 +17,11 @@
     box-shadow: 0;
 
     transition: 300ms;
+}
+
+.player-selector .player:hover {
+    border-color: #a3e6a3;
+    color: #a3e6a3;
 }
 
 .player-selector .player.active {

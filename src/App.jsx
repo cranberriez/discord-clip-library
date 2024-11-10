@@ -2,11 +2,23 @@ import React, { useEffect, useState } from 'react';
 import VideoItem from './VideoItem';
 import UserSelector from './UserSelector';
 import VideoPlayer from './VideoPlayer';
+import ChannelSelector from './ChannelSelector';
 import './App.css';
 
 function extractLastNumber(url) {
     const parts = url.split('/');
     return parts[parts.length - 1];
+}
+
+const CHANNELS = {
+    675233762900049930: {
+        name: "Escape From Tarkov",
+        filepath: "filtered_messages_675233762900049930.json"
+    },
+    1188082042034983034: {
+        name: "Warthunder",
+        filepath: "filtered_messages_1188082042034983034.json"
+    }
 }
 
 function App() {
@@ -15,14 +27,17 @@ function App() {
     const [selectedUser, setSelectedUser] = useState(null);
     const [activeVideo, setActiveVideo] = useState(null);
     const [clipId, setClipId] = useState(null);
+    const [channel, setChannel] = useState(675233762900049930)
 
-    // Fetch JSON data for videos and user icons
+    // Fetch JSON data for videos based on the selected channel
     useEffect(() => {
-        fetch(`${import.meta.env.BASE_URL}filtered_messages.json`)
+        const filepath = CHANNELS[channel].filepath
+        const url = `${import.meta.env.BASE_URL}${filepath}`;
+        fetch(`${url}`)
             .then((response) => response.json())
             .then((data) => setVideos(data))
             .catch((error) => console.error("Error loading videos:", error));
-    }, []);
+    }, [channel]);
 
     useEffect(() => {
         fetch(`${import.meta.env.BASE_URL}user_icons.json`)
@@ -70,7 +85,11 @@ function App() {
 
     return (
         <div className="App">
-            <UserSelector userIcons={userIcons} selectedUser={selectedUser} setSelectedUser={setSelectedUser} />
+            <div className='app-navbar'>
+                <ChannelSelector CHANNELS={CHANNELS} channel={channel} setChannel={setChannel} />
+                <UserSelector userIcons={userIcons} selectedUser={selectedUser} setSelectedUser={setSelectedUser} />
+            </div>
+
             <div className="video-grid">
                 {videos.length > 0 ? (
                     videos.map((video) => (

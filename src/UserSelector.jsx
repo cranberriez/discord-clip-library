@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
-import './VideoItem.css';
-import './UserIcons.css';
+import './videoitem.css';
+import './userselector.css';
 
 function formatUserName(str) {
     const output = str.replace(/_/g, '');
