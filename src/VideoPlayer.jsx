@@ -21,7 +21,7 @@ function extractLastNumber(url) {
     return parts[parts.length - 1];
 }
 
-function VideoPlayer({ video, onClose, onNext, onPrevious, userIcons }) {
+function VideoPlayer({ video, onClose, onNext, onPrevious, userIcons, channel }) {
     const [dimensions, setDimensions] = useState({ width: 0, height: 0 });
     const [volume, setVolume] = useState(0.2); // Default volume
     const [muted, setMuted] = useState(false); // Default muted status
@@ -33,6 +33,7 @@ function VideoPlayer({ video, onClose, onNext, onPrevious, userIcons }) {
     const authorIcon = userIcons[video.Poster] || null;
     const title = formatString(video.Filename)
     const vidID = extractLastNumber(video.Link_to_message)
+    const channelID = channel
 
     useEffect(() => {
         const handleKeyPress = (event) => {
@@ -97,6 +98,7 @@ function VideoPlayer({ video, onClose, onNext, onPrevious, userIcons }) {
     }
 
     const copyToClipboard = (text) => {
+        console.log("clipboard:", text)
         // Remove any existing query parameters
         const baseUrl = window.location.origin + window.location.pathname;
         const urlWithText = `${baseUrl}${text}`;
@@ -116,8 +118,6 @@ function VideoPlayer({ video, onClose, onNext, onPrevious, userIcons }) {
         setTimeout(() => {
             button.classList.remove("animate");
         }, 300); // Match this duration to the animation duration
-
-        copyToClipboard(`?clip=${vidID}`);
     };
 
     return (
@@ -167,7 +167,7 @@ function VideoPlayer({ video, onClose, onNext, onPrevious, userIcons }) {
                 <button
                     className="video-ctrl-btn cpy-btn"
                     onClick={(event) => {
-                        copyToClipboard(`?clip=${vidID}`)
+                        copyToClipboard(`?clip=${vidID}&chan=${channelID}`)
                         animateClick(event)
                     }}
                 ><LinkIcon size={32} /></button>

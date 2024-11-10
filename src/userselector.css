@@ -1,7 +1,10 @@
 .player-selector {
     display: flex;
     justify-content: flex-start;
+    flex-wrap: wrap;
     gap: 2rem;
+
+    max-width: 1400px;
 }
 
 .player-selector .player {

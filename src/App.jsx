@@ -18,6 +18,10 @@ const CHANNELS = {
     1188082042034983034: {
         name: "Warthunder",
         filepath: "filtered_messages_1188082042034983034.json"
+    },
+    679675078719569920: {
+        name: "Other Games",
+        filepath: "filtered_messages_679675078719569920.json"
     }
 }
 
@@ -58,11 +62,15 @@ function App() {
     }, [activeVideo]);
 
 
-    // Scroll to `clip` query param in URL
+    // Get and Set Query Params if they exist
     useEffect(() => {
         const params = new URLSearchParams(window.location.search);
         setClipId(params.get('clip'));
+        console.log(clipId)
+        const queryChan = params.get('chan');
+        if (queryChan) setChannel(queryChan);
     }, []);
+
 
     // Determine the next and previous videos based on activeVideo and selectedUser
     const filteredVideos = selectedUser
@@ -114,6 +122,7 @@ function App() {
                     onNext={() => setActiveVideo(getNextVideo())}
                     onPrevious={() => setActiveVideo(getPreviousVideo())}
                     userIcons={userIcons}
+                    channel={channel}
                 />
             )}
         </div>
