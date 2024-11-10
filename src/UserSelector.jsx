@@ -7,7 +7,7 @@ function formatUserName(str) {
     return output.charAt(0).toUpperCase() + output.slice(1);
 }
 
-function UserSelector({ userIcons, selectedUser, setSelectedUser }) {
+function UserSelector({ userIcons, selectedUser, setSelectedUser, channel }) {
     const handleUserSelect = (user) => {
         if (selectedUser === user) {
             setSelectedUser(null);
@@ -18,12 +18,12 @@ function UserSelector({ userIcons, selectedUser, setSelectedUser }) {
 
     return (
         <div className="player-selector">
-            {Object.keys(userIcons).length > 0 ? (
-                Object.keys(userIcons).map((key) => (
+            {Object.keys(userIcons).length > 0 && channel ? (
+                Object.keys(userIcons[channel]).map((key) => (
                     <UserButton
                         key={key}
                         user={key}
-                        icon={userIcons[key]}
+                        icon={userIcons[channel][key]}
                         onClick={() => handleUserSelect(key)}
                         active={key === selectedUser}
                     />
@@ -41,7 +41,9 @@ function UserButton({ user, icon, onClick, active }) {
             className={`player ${active ? 'active' : ''}`}
             onClick={onClick}
         >
-            <img className="author-icon" src={icon} alt={`${user}'s avatar`} />
+            <div className="author-icon" >
+                {icon && <img src={icon} alt={`${user}'s avatar`} />}
+            </div>
             {formatUserName(user)}
         </button>
     );

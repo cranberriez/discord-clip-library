@@ -11,15 +11,15 @@ function extractLastNumber(url) {
 }
 
 const CHANNELS = {
-    675233762900049930: {
+    "675233762900049930": {
         name: "Escape From Tarkov",
         filepath: "filtered_messages_675233762900049930.json"
     },
-    1188082042034983034: {
+    "1188082042034983034": {
         name: "Warthunder",
         filepath: "filtered_messages_1188082042034983034.json"
     },
-    679675078719569920: {
+    "679675078719569920": {
         name: "Other Games",
         filepath: "filtered_messages_679675078719569920.json"
     }
@@ -31,7 +31,7 @@ function App() {
     const [selectedUser, setSelectedUser] = useState(null);
     const [activeVideo, setActiveVideo] = useState(null);
     const [clipId, setClipId] = useState(null);
-    const [channel, setChannel] = useState(675233762900049930)
+    const [channel, setChannel] = useState("675233762900049930")
 
     // Fetch JSON data for videos based on the selected channel
     useEffect(() => {
@@ -66,9 +66,8 @@ function App() {
     useEffect(() => {
         const params = new URLSearchParams(window.location.search);
         setClipId(params.get('clip'));
-        console.log(clipId)
         const queryChan = params.get('chan');
-        if (queryChan) setChannel(queryChan);
+        if (queryChan) setChannel(String(queryChan));
     }, []);
 
 
@@ -95,7 +94,7 @@ function App() {
         <div className="App">
             <div className='app-navbar'>
                 <ChannelSelector CHANNELS={CHANNELS} channel={channel} setChannel={setChannel} />
-                <UserSelector userIcons={userIcons} selectedUser={selectedUser} setSelectedUser={setSelectedUser} />
+                <UserSelector userIcons={userIcons} selectedUser={selectedUser} setSelectedUser={setSelectedUser} channel={channel} />
             </div>
 
             <div className="video-grid">
@@ -104,7 +103,7 @@ function App() {
                         <VideoItem
                             key={video.Attachment_URL}
                             video={video}
-                            userIcons={userIcons}
+                            userIcons={userIcons[channel]}
                             selectedUser={selectedUser}
                             clipId={clipId}
                             onClick={setActiveVideo} // Set active video when clicked

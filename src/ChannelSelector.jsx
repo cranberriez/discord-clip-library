@@ -9,6 +9,8 @@ function ChannelSelector({ CHANNELS, channel, setChannel }) {
         setIsOpen(false); // Close the dropdown when an option is selected
     };
 
+    console.log(channel)
+
     return (
         <div className="channel-selector">
             <div
@@ -30,12 +32,12 @@ function ChannelSelector({ CHANNELS, channel, setChannel }) {
                         <div
                             className="option"
                             key={id}
-                            onClick={() => handleOptionClick(Number(id))}
+                            onClick={() => handleOptionClick(id)}
                         >
                             <input
                                 type="radio"
                                 name="platform"
-                                checked={channel === Number(id)}
+                                checked={channel === id}
                                 readOnly
                             />
                             <span className="label">{name}</span>

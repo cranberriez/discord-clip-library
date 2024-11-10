@@ -80,7 +80,12 @@ function VideoItem({ video, userIcons, selectedUser, clipId, onClick }) {
             <div className={`video-card ${isActive ? 'active' : ''}`} ref={containerRef} id={vidID}>
                 <div className="video-wrapper" onClick={() => { onClick(video); setIsActive(false) }}>
                     {isPosterVisible ? (
-                        <img src={posterPath} alt={`${video.Filename} thumbnail`} className="video-thumbnail" />
+                        <img
+                            src={posterPath}
+                            alt={`${video.Filename} thumbnail`}
+                            className="video-thumbnail"
+                            onError={(e) => { e.target.src = "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQWZbAhzVPm8sF_FoGJPNhfFgMGvFUtzMD0Dw&s"; }}
+                        />
                     ) : (
                         <div className="video-placeholder">
                             <p>Loading...</p>

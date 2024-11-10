@@ -30,7 +30,7 @@ function VideoPlayer({ video, onClose, onNext, onPrevious, userIcons, channel })
     const mediaStore = useMediaStore(mediaPlayerRef);
 
     if (!video) return null;
-    const authorIcon = userIcons[video.Poster] || null;
+    const authorIcon = userIcons[channel][video.Poster] || null;
     const title = formatString(video.Filename)
     const vidID = extractLastNumber(video.Link_to_message)
     const channelID = channel
@@ -157,12 +157,13 @@ function VideoPlayer({ video, onClose, onNext, onPrevious, userIcons, channel })
                     {!autoplay && <RepeatSquareIcon size={32} />}
                     {autoplay && <PlaybackSpeedCircleIcon size={32} />}
                 </button>
-
-                {authorIcon && <img
-                    src={authorIcon}
-                    alt={`${video.Poster}'s icon`}
-                    className="author-icon vcb-bot-div"
-                />}
+                <div className="author-icon vcb-bot-div" >
+                    {authorIcon && <img
+                        src={authorIcon}
+                        alt={`${video.Poster}'s icon`}
+                        onError={(e) => { e.target.src = "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQWZbAhzVPm8sF_FoGJPNhfFgMGvFUtzMD0Dw&s"; }}
+                    />}
+                </div>
 
                 <button
                     className="video-ctrl-btn cpy-btn"
