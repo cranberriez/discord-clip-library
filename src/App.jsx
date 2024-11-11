@@ -3,7 +3,7 @@ import VideoItem from './VideoItem';
 import UserSelector from './UserSelector';
 import VideoPlayer from './VideoPlayer';
 import ChannelSelector from './ChannelSelector';
-import './App.css';
+import './css/App.css';
 
 function extractLastNumber(url) {
     const parts = url.split('/');

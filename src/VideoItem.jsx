@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
-import './VideoItem.css';
+import './css/VideoItem.css';
 
 function extractLastNumber(url) {
     const parts = url.split('/');

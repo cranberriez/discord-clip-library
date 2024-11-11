@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useRef } from 'react';
 import '@vidstack/react/player/styles/default/theme.css';
-import './VideoPlayer.css';
+import './css/VideoPlayer.css';
 
 import { MediaPlayer, MediaProvider, Title, useMediaStore } from '@vidstack/react';
 import { XMarkIcon, ArrowRightIcon, ArrowLeftIcon, RepeatSquareIcon, PlaybackSpeedCircleIcon, LinkIcon } from '@vidstack/react/icons';
