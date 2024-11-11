@@ -22,6 +22,10 @@ const CHANNELS = {
     "679675078719569920": {
         name: "Other Games",
         filepath: "filtered_messages_679675078719569920.json"
+    },
+    "1180731401503506453": {
+        name: "Lethal Company",
+        filepath: "filtered_messages_1180731401503506453.json"
     }
 }
 
@@ -105,6 +109,7 @@ function App() {
                             video={video}
                             userIcons={userIcons[channel]}
                             selectedUser={selectedUser}
+                            channelId={channel}
                             clipId={clipId}
                             onClick={setActiveVideo} // Set active video when clicked
                         />

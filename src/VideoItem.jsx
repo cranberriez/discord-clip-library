@@ -16,11 +16,22 @@ function formatDate(dateString) {
     return date.toLocaleDateString('en-US', options);
 }
 
-function VideoItem({ video, userIcons, selectedUser, clipId, onClick }) {
+function formatTitle(title) {
+    return capitalizeFirstLetter(
+        title.replace(".DVR_-_Trim", "")
+            .replace("DVR", "")
+            .replace("_-_Made_with_Clipchamp", "")
+            .replace(/_/g, " ")
+            .replace(/\./g, "")
+            .replace(/-/g, "")
+            .replace(/\d/g, "")
+    )
+}
+
+function VideoItem({ video, userIcons, selectedUser, channelId, clipId, onClick }) {
     const containerRef = useRef(null);
     const [isPosterVisible, setIsPosterVisible] = useState(false);
     const [isActive, setIsActive] = useState(false);
-    const posterPath = `${import.meta.env.BASE_URL}thumb/${video.Filename}.png`;
 
     useEffect(() => {
         setIsPosterVisible(false);
@@ -46,18 +57,20 @@ function VideoItem({ video, userIcons, selectedUser, clipId, onClick }) {
         };
     }, [selectedUser]);
 
+    const vidTitle = formatTitle(video.Filename);
     const authorIcon = userIcons[video.Poster] || null;
     const authorText = capitalizeFirstLetter(video.Poster.replace(/_/g, ''));
     const dateText = formatDate(video.Date);
     const isCurSelectedUser = video.Poster === selectedUser || selectedUser === null;
-    const vidID = extractLastNumber(video.Link_to_message)
+    const vidId = extractLastNumber(video.Link_to_message)
+    const posterPath = `${import.meta.env.BASE_URL}thumb/${channelId}.${vidId}.png`;
 
     useEffect(() => {
-        if (vidID === clipId) {
+        if (vidId === clipId) {
             setIsActive(true)
             // Add 100ms delay before scrolling
             setTimeout(() => {
-                const element = document.getElementById(vidID);
+                const element = document.getElementById(vidId);
                 if (element) {
                     const elementPosition = element.getBoundingClientRect().top + window.scrollY;
                     const offset = window.innerHeight * 0.2; // 20% viewport height
@@ -73,16 +86,16 @@ function VideoItem({ video, userIcons, selectedUser, clipId, onClick }) {
         else {
             setIsActive(false);
         }
-    }, [vidID, clipId]);
+    }, [vidId, clipId]);
 
     return (
         isCurSelectedUser ? (
-            <div className={`video-card ${isActive ? 'active' : ''}`} ref={containerRef} id={vidID}>
+            <div className={`video-card ${isActive ? 'active' : ''}`} ref={containerRef} id={vidId}>
                 <div className="video-wrapper" onClick={() => { onClick(video); setIsActive(false) }}>
                     {isPosterVisible ? (
                         <img
                             src={posterPath}
-                            alt={`${video.Filename} thumbnail`}
+                            alt={`${channelId}.${clipId} thumbnail`}
                             className="video-thumbnail"
                         />
                     ) : (
@@ -90,6 +103,9 @@ function VideoItem({ video, userIcons, selectedUser, clipId, onClick }) {
                             <p>Loading...</p>
                         </div>
                     )}
+                </div>
+                <div className='video-title'>
+                    <p>{vidTitle}</p>
                 </div>
                 <div className="video-subtext">
                     {authorIcon && (

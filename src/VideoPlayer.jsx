@@ -31,9 +31,10 @@ function VideoPlayer({ video, onClose, onNext, onPrevious, userIcons, channel })
 
     if (!video) return null;
     const authorIcon = userIcons[channel][video.Poster] || null;
-    const title = formatString(video.Filename)
-    const vidID = extractLastNumber(video.Link_to_message)
-    const channelID = channel
+    const title = formatString(video.Filename);
+    const vidID = extractLastNumber(video.Link_to_message);
+    const channelId = channel;
+    const posterPath = `${import.meta.env.BASE_URL}thumb/${channelId}.${vidID}.png`;
 
     useEffect(() => {
         const handleKeyPress = (event) => {
@@ -136,6 +137,7 @@ function VideoPlayer({ video, onClose, onNext, onPrevious, userIcons, channel })
                 volume={volume}
                 muted={muted}
                 style={{ width: dimensions.width, height: dimensions.height }}
+                poster={posterPath}
 
                 onVolumeChange={onVolumeChange}
                 onEnded={onEnded}
@@ -168,7 +170,7 @@ function VideoPlayer({ video, onClose, onNext, onPrevious, userIcons, channel })
                 <button
                     className="video-ctrl-btn cpy-btn"
                     onClick={(event) => {
-                        copyToClipboard(`?clip=${vidID}&chan=${channelID}`)
+                        copyToClipboard(`?clip=${vidID}&chan=${channelId}`)
                         animateClick(event)
                     }}
                 ><LinkIcon size={32} /></button>
