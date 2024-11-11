@@ -23,7 +23,7 @@ function formatTitle(title) {
     )
 }
 
-function VideoItem({ video, userIcons, selectedUser, clipId, onClick }) {
+function VideoItem({ video, userIcons, clipId, onClick }) {
     const containerRef = useRef(null);
     const [isPosterVisible, setIsPosterVisible] = useState(false);
     const [isActive, setIsActive] = useState(false);
@@ -50,13 +50,12 @@ function VideoItem({ video, userIcons, selectedUser, clipId, onClick }) {
             }
             observer.disconnect();
         };
-    }, [selectedUser]);
+    }, []);
 
     const vidTitle = formatTitle(video.Filename);
     const authorIcon = userIcons[video.Poster] || null;
     const authorText = capitalizeFirstLetter(video.Poster.replace(/_/g, ''));
     const dateText = formatDate(video.Date);
-    const isCurSelectedUser = video.Poster === selectedUser || selectedUser === null;
     const vidId = video.Id
     const posterPath = `${import.meta.env.BASE_URL}thumb/${vidId}.png`;
 
@@ -84,37 +83,35 @@ function VideoItem({ video, userIcons, selectedUser, clipId, onClick }) {
     }, [vidId, clipId]);
 
     return (
-        isCurSelectedUser ? (
-            <div className={`video-card ${isActive ? 'active' : ''}`} ref={containerRef} id={vidId}>
-                <div className="video-wrapper" onClick={() => { onClick(video); setIsActive(false) }}>
-                    {isPosterVisible ? (
-                        <img
-                            src={posterPath}
-                            alt={`${video.Filename} thumbnail`}
-                            className="video-thumbnail"
-                        />
-                    ) : (
-                        <div className="video-placeholder">
-                            <p>Loading...</p>
-                        </div>
-                    )}
-                </div>
-                <div className='video-title'>
-                    <p>{vidTitle}</p>
-                </div>
-                <div className="video-subtext">
-                    {authorIcon && (
-                        <img
-                            src={authorIcon}
-                            alt={`${video.Poster}'s icon`}
-                            className="author-icon"
-                        />
-                    )}
-                    <p className="author-text">{authorText}</p>
-                    <p className="date">{dateText}</p>
-                </div>
+        <div className={`video-card ${isActive ? 'active' : ''}`} ref={containerRef} id={vidId}>
+            <div className="video-wrapper" onClick={() => { onClick(video); setIsActive(false) }}>
+                {isPosterVisible ? (
+                    <img
+                        src={posterPath}
+                        alt={`${video.Filename} thumbnail`}
+                        className="video-thumbnail"
+                    />
+                ) : (
+                    <div className="video-placeholder">
+                        <p>Loading...</p>
+                    </div>
+                )}
             </div>
-        ) : null
+            <div className='video-title'>
+                <p>{vidTitle}</p>
+            </div>
+            <div className="video-subtext">
+                {authorIcon && (
+                    <img
+                        src={authorIcon}
+                        alt={`${video.Poster}'s icon`}
+                        className="author-icon"
+                    />
+                )}
+                <p className="author-text">{authorText}</p>
+                <p className="date">{dateText}</p>
+            </div>
+        </div>
     );
 }
 

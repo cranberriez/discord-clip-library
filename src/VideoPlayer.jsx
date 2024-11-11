@@ -109,7 +109,6 @@ function VideoPlayer({ video, onClose, onNext, onPrevious, userIcons, channel })
             });
     };
 
-
     const animateClick = ({ event = null, id = null }) => {
         let button = null; // Reference to the button itself
         if (event) button = event.currentTarget;

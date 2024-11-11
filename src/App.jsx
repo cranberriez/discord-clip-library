@@ -34,9 +34,18 @@ const CHANNELS = {
 }
 
 function App() {
+    // Videos and filtering state
     const [baseVideos, setBaseVideos] = useState({});
     const [filteredVideos, setFilteredVideos] = useState([]);
     const [channel, setChannel] = useState("675233762900049930");
+
+    // User data state
+    const [userIcons, setUserIcons] = useState({});
+    const [selectedUser, setSelectedUser] = useState(null);
+
+    // Current playing video / skip to video
+    const [activeVideo, setActiveVideo] = useState(null);
+    const [clipId, setClipId] = useState(null);
 
     // Load all JSON data once and store it in `baseVideos`
     useEffect(() => {
@@ -64,28 +73,14 @@ function App() {
     useEffect(() => {
         const applyFilters = () => {
             const channelVideos = baseVideos[channel] || [];
-            setFilteredVideos(channelVideos);
+            const userFiltered = channelVideos.filter((video) => video.Poster === selectedUser || selectedUser === null)
+            setFilteredVideos(userFiltered);
         };
 
         applyFilters();
-    }, [baseVideos, channel]);
+    }, [baseVideos, channel, selectedUser]);
 
-    // Sample function to add other filters (e.g., filter by title, date, etc.)
-    const applyAdditionalFilters = (filters) => {
-        const filtered = baseVideos[channel].filter((video) => {
-            // Apply each filter condition
-            for (const key in filters) {
-                if (filters[key] && video[key] !== filters[key]) return false;
-            }
-            return true;
-        });
-        setFilteredVideos(filtered);
-    };
-
-    const [userIcons, setUserIcons] = useState({});
-    const [selectedUser, setSelectedUser] = useState(null);
-    const [activeVideo, setActiveVideo] = useState(null);
-    const [clipId, setClipId] = useState(null);
+    // 
 
     useEffect(() => {
         fetch(`${import.meta.env.BASE_URL}user_icons.json`)
@@ -120,14 +115,14 @@ function App() {
 
     const getNextVideo = () => {
         if (!activeVideo) return null;
-        const currentIndex = filteredVideos.findIndex((video) => video.Attachment_URL === activeVideo.Attachment_URL);
+        const currentIndex = filteredVideos.findIndex((video) => video.Id === activeVideo.Id);
         const nextIndex = (currentIndex + 1) % filteredVideos.length;
         return filteredVideos[nextIndex];
     };
 
     const getPreviousVideo = () => {
         if (!activeVideo) return null;
-        const currentIndex = filteredVideos.findIndex((video) => video.Attachment_URL === activeVideo.Attachment_URL);
+        const currentIndex = filteredVideos.findIndex((video) => video.Id === activeVideo.Id);
         const previousIndex = (currentIndex - 1 + filteredVideos.length) % filteredVideos.length;
         return filteredVideos[previousIndex];
     };
