@@ -4,12 +4,30 @@
     font-weight: 400;
 
     color-scheme: light dark;
-    color: rgba(255, 255, 255, 0.87);
 
     font-synthesis: none;
     text-rendering: optimizeLegibility;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
+
+    --text-light: #FEFEFE;
+    --text-gray: #C2C2C2;
+    --text-dark: #aaa;
+
+    --bg-light: #333;
+    --bg-default: #212121;
+    --bg-dark: #1f1f1f;
+
+    --border-dark: #1c1c1c;
+
+    --author-default: #9b59b6;
+    --error: #e74c3c;
+    --primary: #5bda66;
+    --primary-light: #bad6bd;
+    --primary-dark: #1b2921;
+    --primary-25: rgba(46, 204, 113, 0.25);
+
+    --dark-overlay: rgba(25, 25, 25, 0.8);
 }
 
 * {
@@ -25,16 +43,6 @@
 
 html {
     max-width: 100vw;
-}
-
-a {
-    font-weight: 500;
-    color: #646cff;
-    text-decoration: inherit;
-}
-
-a:hover {
-    color: #535bf2;
 }
 
 body {

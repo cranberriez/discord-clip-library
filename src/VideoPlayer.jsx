@@ -16,11 +16,6 @@ function formatString(str) {
         .replace(/\b\w/g, (char) => char.toUpperCase());
 }
 
-function extractLastNumber(url) {
-    const parts = url.split('/');
-    return parts[parts.length - 1];
-}
-
 function VideoPlayer({ video, onClose, onNext, onPrevious, userIcons, channel }) {
     const [dimensions, setDimensions] = useState({ width: 0, height: 0 });
     const [volume, setVolume] = useState(0.2); // Default volume
@@ -124,7 +119,7 @@ function VideoPlayer({ video, onClose, onNext, onPrevious, userIcons, channel })
     };
 
     return (
-        <div className="video-player-overlay">
+        <div className="video-player-overlay" style={{ "--max-width": dimensions.width, "--max-height": dimensions.width }}>
             <MediaPlayer
                 className="video-player"
                 ref={mediaPlayerRef}
@@ -146,9 +141,6 @@ function VideoPlayer({ video, onClose, onNext, onPrevious, userIcons, channel })
                 onEnded={onEnded}
             >
                 <MediaProvider className='video-provider' />
-                <Title
-                    className='video-player-title'
-                />
             </MediaPlayer>
             <div
                 className="video-controls"
@@ -187,6 +179,10 @@ function VideoPlayer({ video, onClose, onNext, onPrevious, userIcons, channel })
 
 
                 {/* <ShareArrowIcon size={32} /> */}
+            </div>
+            <div className='video-details'>
+                <p className='video-title'>{title}</p>
+                <p className='video-description'>{video.Description ? "• " + video.Description : ""}</p>
             </div>
         </div >
     );

@@ -6,6 +6,11 @@ function capitalizeFirstLetter(str) {
     return str.charAt(0).toUpperCase() + str.slice(1);
 }
 
+function formatUsername(username) {
+    if (username.includes("Deleted User#0000")) return "Arshy"
+    return capitalizeFirstLetter(username.replace(/_/g, ''))
+}
+
 function formatDate(dateString) {
     const date = new Date(dateString);
     const options = { month: 'short', day: 'numeric', year: 'numeric' };
@@ -61,11 +66,13 @@ function VideoItem({ video, userIcons, clipId, onClick }) {
 
     const vidTitle = formatTitle(video.Filename);
     const authorIcon = userIcons[video.Poster] || null;
-    const authorText = capitalizeFirstLetter(video.Poster.replace(/_/g, ''));
+    const authorText = formatUsername(video.Poster);
     const dateText = formatDate(video.Date);
     const vidId = video.Id
     const posterPath = `${import.meta.env.BASE_URL}thumb/${vidId}.png`;
     const expired = isExpired(video.Expire_Timestamp)
+
+    if (video.Description.length > 0) console.log(video.Description)
 
     useEffect(() => {
         if (vidId === clipId) {

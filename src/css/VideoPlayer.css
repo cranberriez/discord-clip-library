@@ -5,38 +5,38 @@
     width: 100vw;
     height: 100vh;
     background-color: rgba(0, 0, 0, 0.9);
-    display: flex;
-    align-items: center;
+    display: grid;
+    align-items: flex-start;
     justify-content: center;
+    grid-template-columns: minmax(1fr, var(--max-width)) min-content;
+    grid-template-rows: minmax(1fr, var(--max-width)) min-content;
+    grid-template-areas:
+        "player controls"
+        "details details";
+
     z-index: 99;
     overflow: hidden;
-    padding: 1rem;
-    padding-right: 10px;
+    padding: .5rem;
     gap: 10px;
 }
 
 .video-player {
+    grid-area: player;
+    justify-self: center;
+
     width: 100%;
     max-width: 95vw;
-    /* Ensure it doesn't exceed viewport width */
     max-height: 95vh;
-    /* Ensure it doesn't exceed viewport height */
+
     background-color: #000;
     border-radius: 12px;
     outline: 0;
 }
 
-.video-player-title {
-    position: absolute;
-    bottom: 100%;
-    left: 50%;
-    transform: translate(-50%, 0);
-    font-size: 1.2rem;
-    width: 100%;
-    text-align: center;
-}
-
 .video-controls {
+    grid-area: controls;
+    justify-self: start;
+
     height: 100%;
 
     padding: .2rem;
@@ -51,6 +51,8 @@
 
 .video-controls .author-icon {
     margin: 0;
+    margin-top: 10px;
+
     scale: 1.5;
 }
 
@@ -130,6 +132,18 @@ video:focus {
     animation: clickEffect 1s ease;
 }
 
+.video-details {
+    grid-area: details;
+    display: flex;
+    align-items: center;
+}
+
+.video-title {
+    font-size: 1.2em;
+}
+
+.video-description {}
+
 @media (max-height: 600px) {
     .video-controls {
         gap: .5rem;
@@ -155,6 +169,7 @@ video:focus {
 
     .video-controls .author-icon {
         margin: 0;
+        margin-left: 10px;
     }
 
     .vcb-bot-div {

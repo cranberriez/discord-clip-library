@@ -3,12 +3,8 @@ import VideoItem from './VideoItem';
 import UserSelector from './UserSelector';
 import VideoPlayer from './VideoPlayer';
 import ChannelSelector from './ChannelSelector';
+import Navbar from './Navbar';
 import './css/App.css';
-
-function extractLastNumber(url) {
-    const parts = url.split('/');
-    return parts[parts.length - 1];
-}
 
 const CHANNELS = {
     "675233762900049930": {
@@ -37,7 +33,7 @@ function App() {
     // Videos and filtering state
     const [baseVideos, setBaseVideos] = useState({});
     const [filteredVideos, setFilteredVideos] = useState([]);
-    const [channel, setChannel] = useState("675233762900049930");
+    const [selectedChannel, setSelectedChannel] = useState("675233762900049930");
 
     // User data state
     const [userIcons, setUserIcons] = useState({});
@@ -69,19 +65,28 @@ function App() {
         fetchData();
     }, []);
 
-    // Filter videos by `channelId`
+    // Filter videos by `channelId` and `selectedUser`
     useEffect(() => {
         const applyFilters = () => {
-            const channelVideos = baseVideos[channel] || [];
+            const channelVideos = baseVideos[selectedChannel] || [];
             const userFiltered = channelVideos.filter((video) => video.Poster === selectedUser || selectedUser === null)
             setFilteredVideos(userFiltered);
         };
 
         applyFilters();
-    }, [baseVideos, channel, selectedUser]);
+    }, [baseVideos, selectedChannel, selectedUser]);
 
-    // 
+    // Get # of clips per poster
+    const posterCounts = useMemo(() => {
+        if (!baseVideos || baseVideos.length <= 0 || !baseVideos[selectedChannel]) return {};
 
+        return baseVideos[selectedChannel].reduce((acc, item) => {
+            acc[item.Poster] = (acc[item.Poster] || 0) + 1;
+            return acc;
+        }, {});
+    }, [selectedChannel, baseVideos]);
+
+    // Fetch user icons json data
     useEffect(() => {
         fetch(`${import.meta.env.BASE_URL}user_icons.json`)
             .then((response) => response.json())
@@ -93,7 +98,7 @@ function App() {
     useEffect(() => {
         document.body.style.overflow = activeVideo ? 'hidden' : 'auto';
         if (activeVideo) {
-            setClipId(extractLastNumber(activeVideo.Link_to_message))
+            setClipId(activeVideo.Id)
         }
         return () => {
             document.body.style.overflow = 'auto'; // Reset on cleanup
@@ -105,13 +110,8 @@ function App() {
         const params = new URLSearchParams(window.location.search);
         setClipId(params.get('clip'));
         const queryChan = params.get('chan');
-        if (queryChan) setChannel(String(queryChan));
+        if (queryChan) setSelectedChannel(String(queryChan));
     }, []);
-
-    // Determine the next and previous videos based on activeVideo and selectedUser
-    // const filteredVideos = selectedUser
-    //     ? videos.filter((video) => video.Poster === selectedUser)
-    //     : videos;
 
     const getNextVideo = () => {
         if (!activeVideo) return null;
@@ -129,10 +129,14 @@ function App() {
 
     return (
         <div className="App">
-            <div className='app-navbar'>
+            {/* <div className='app-navbar'>
                 <ChannelSelector CHANNELS={CHANNELS} channel={channel} setChannel={setChannel} />
                 <UserSelector userIcons={userIcons} selectedUser={selectedUser} setSelectedUser={setSelectedUser} channel={channel} />
-            </div>
+            </div> */}
+            <Navbar
+                CHANNELS={CHANNELS} selectedChannel={selectedChannel} setSelectedChannel={setSelectedChannel}
+                userIcons={userIcons} selectedUser={selectedUser} setSelectedUser={setSelectedUser} posterCounts={posterCounts}
+            />
 
             <div className="video-grid">
                 {filteredVideos.length > 0 ? (
@@ -140,9 +144,9 @@ function App() {
                         <VideoItem
                             key={video.Attachment_URL}
                             video={video}
-                            userIcons={userIcons[channel]}
+                            userIcons={userIcons[selectedChannel]}
                             selectedUser={selectedUser}
-                            channelId={channel}
+                            channelId={selectedChannel}
                             clipId={clipId}
                             onClick={setActiveVideo} // Set active video when clicked
                         />
@@ -159,7 +163,7 @@ function App() {
                     onNext={() => setActiveVideo(getNextVideo())}
                     onPrevious={() => setActiveVideo(getPreviousVideo())}
                     userIcons={userIcons}
-                    channel={channel}
+                    channel={selectedChannel}
                 />
             )}
         </div>
