@@ -9,8 +9,6 @@ function ChannelSelector({ CHANNELS, channel, setChannel }) {
         setIsOpen(false); // Close the dropdown when an option is selected
     };
 
-    console.log(channel)
-
     return (
         <div className="channel-selector">
             <div

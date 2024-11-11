@@ -1,11 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import './css/VideoItem.css';
 
-function extractLastNumber(url) {
-    const parts = url.split('/');
-    return parts[parts.length - 1];
-}
-
 function capitalizeFirstLetter(str) {
     return str.charAt(0).toUpperCase() + str.slice(1);
 }
@@ -28,7 +23,7 @@ function formatTitle(title) {
     )
 }
 
-function VideoItem({ video, userIcons, selectedUser, channelId, clipId, onClick }) {
+function VideoItem({ video, userIcons, selectedUser, clipId, onClick }) {
     const containerRef = useRef(null);
     const [isPosterVisible, setIsPosterVisible] = useState(false);
     const [isActive, setIsActive] = useState(false);
@@ -62,8 +57,8 @@ function VideoItem({ video, userIcons, selectedUser, channelId, clipId, onClick 
     const authorText = capitalizeFirstLetter(video.Poster.replace(/_/g, ''));
     const dateText = formatDate(video.Date);
     const isCurSelectedUser = video.Poster === selectedUser || selectedUser === null;
-    const vidId = extractLastNumber(video.Link_to_message)
-    const posterPath = `${import.meta.env.BASE_URL}thumb/${channelId}.${vidId}.png`;
+    const vidId = video.Id
+    const posterPath = `${import.meta.env.BASE_URL}thumb/${vidId}.png`;
 
     useEffect(() => {
         if (vidId === clipId) {

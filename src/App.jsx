@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useMemo } from 'react';
 import VideoItem from './VideoItem';
 import UserSelector from './UserSelector';
 import VideoPlayer from './VideoPlayer';
@@ -26,26 +26,66 @@ const CHANNELS = {
     "1180731401503506453": {
         name: "Lethal Company",
         filepath: "filtered_messages_1180731401503506453.json"
+    },
+    "677367926176874509": {
+        name: "Overwatch",
+        filepath: "filtered_messages_677367926176874509.json"
     }
 }
 
 function App() {
-    const [videos, setVideos] = useState([]);
+    const [baseVideos, setBaseVideos] = useState({});
+    const [filteredVideos, setFilteredVideos] = useState([]);
+    const [channel, setChannel] = useState("675233762900049930");
+
+    // Load all JSON data once and store it in `baseVideos`
+    useEffect(() => {
+        const fetchData = async () => {
+            const videoData = {};
+            await Promise.all(
+                Object.entries(CHANNELS).map(async ([channelId, { filepath }]) => {
+                    const url = `${import.meta.env.BASE_URL}${filepath}`;
+                    try {
+                        const response = await fetch(url);
+                        const data = await response.json();
+                        videoData[channelId] = data;
+                    } catch (error) {
+                        console.error(`Error loading videos for ${channelId}:`, error);
+                    }
+                })
+            );
+            setBaseVideos(videoData);
+        };
+
+        fetchData();
+    }, []);
+
+    // Filter videos by `channelId`
+    useEffect(() => {
+        const applyFilters = () => {
+            const channelVideos = baseVideos[channel] || [];
+            setFilteredVideos(channelVideos);
+        };
+
+        applyFilters();
+    }, [baseVideos, channel]);
+
+    // Sample function to add other filters (e.g., filter by title, date, etc.)
+    const applyAdditionalFilters = (filters) => {
+        const filtered = baseVideos[channel].filter((video) => {
+            // Apply each filter condition
+            for (const key in filters) {
+                if (filters[key] && video[key] !== filters[key]) return false;
+            }
+            return true;
+        });
+        setFilteredVideos(filtered);
+    };
+
     const [userIcons, setUserIcons] = useState({});
     const [selectedUser, setSelectedUser] = useState(null);
     const [activeVideo, setActiveVideo] = useState(null);
     const [clipId, setClipId] = useState(null);
-    const [channel, setChannel] = useState("675233762900049930")
-
-    // Fetch JSON data for videos based on the selected channel
-    useEffect(() => {
-        const filepath = CHANNELS[channel].filepath
-        const url = `${import.meta.env.BASE_URL}${filepath}`;
-        fetch(`${url}`)
-            .then((response) => response.json())
-            .then((data) => setVideos(data))
-            .catch((error) => console.error("Error loading videos:", error));
-    }, [channel]);
 
     useEffect(() => {
         fetch(`${import.meta.env.BASE_URL}user_icons.json`)
@@ -65,7 +105,6 @@ function App() {
         };
     }, [activeVideo]);
 
-
     // Get and Set Query Params if they exist
     useEffect(() => {
         const params = new URLSearchParams(window.location.search);
@@ -74,11 +113,10 @@ function App() {
         if (queryChan) setChannel(String(queryChan));
     }, []);
 
-
     // Determine the next and previous videos based on activeVideo and selectedUser
-    const filteredVideos = selectedUser
-        ? videos.filter((video) => video.Poster === selectedUser)
-        : videos;
+    // const filteredVideos = selectedUser
+    //     ? videos.filter((video) => video.Poster === selectedUser)
+    //     : videos;
 
     const getNextVideo = () => {
         if (!activeVideo) return null;
@@ -102,8 +140,8 @@ function App() {
             </div>
 
             <div className="video-grid">
-                {videos.length > 0 ? (
-                    videos.map((video) => (
+                {filteredVideos.length > 0 ? (
+                    filteredVideos.map((video) => (
                         <VideoItem
                             key={video.Attachment_URL}
                             video={video}

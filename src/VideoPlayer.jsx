@@ -32,9 +32,8 @@ function VideoPlayer({ video, onClose, onNext, onPrevious, userIcons, channel })
     if (!video) return null;
     const authorIcon = userIcons[channel][video.Poster] || null;
     const title = formatString(video.Filename);
-    const vidID = extractLastNumber(video.Link_to_message);
-    const channelId = channel;
-    const posterPath = `${import.meta.env.BASE_URL}thumb/${channelId}.${vidID}.png`;
+    const vidId = video.Id
+    const posterPath = `${import.meta.env.BASE_URL}thumb/${vidId}.png`;
 
     useEffect(() => {
         const handleKeyPress = (event) => {
@@ -94,7 +93,6 @@ function VideoPlayer({ video, onClose, onNext, onPrevious, userIcons, channel })
             }, 500)
         }
         else {
-            console.log("animated next")
             animateClick({ id: "video-plyr-next" })
         }
     }
@@ -179,7 +177,7 @@ function VideoPlayer({ video, onClose, onNext, onPrevious, userIcons, channel })
                     className="video-ctrl-btn cpy-btn vcb-bot-div"
                     data-label="Copy Link"
                     onClick={(event) => {
-                        copyToClipboard(`?clip=${vidID}&chan=${channelId}`)
+                        copyToClipboard(`?clip=${vidId}&chan=${channel}`)
                         animateClick({ event: event })
                     }}
                 ><LinkIcon size={32} /></button>
