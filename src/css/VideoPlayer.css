@@ -8,10 +8,11 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    gap: 1rem;
-    z-index: 1000;
+    z-index: 99;
     overflow: hidden;
     padding: 1rem;
+    padding-right: 10px;
+    gap: 10px;
 }
 
 .video-player {
@@ -27,14 +28,14 @@
 
 .video-player-title {
     position: absolute;
-    top: -1.6rem;
+    bottom: 100%;
     left: 50%;
     transform: translate(-50%, 0);
     font-size: 1.2rem;
+    width: 100%;
+    text-align: center;
 }
 
-
-/* Optional controls styling retained for future use */
 .video-controls {
     height: 100%;
 
@@ -49,9 +50,8 @@
 }
 
 .video-controls .author-icon {
-    margin-right: 0;
+    margin: 0;
     scale: 1.5;
-    margin-bottom: 1rem;
 }
 
 .video-ctrl-btn {
@@ -61,7 +61,8 @@
     border-radius: 4px;
     padding: 1rem;
     cursor: pointer;
-    transition: background-color 0.3s ease;
+    transition: 150ms ease;
+    position: relative;
 }
 
 .video-ctrl-btn:hover {
@@ -69,12 +70,35 @@
     background-color: #222;
 }
 
+.video-ctrl-btn::before {
+    content: attr(data-label);
+    position: absolute;
+    right: 105%;
+    background-color: #111;
+    color: #c2c2c2;
+    padding: 0.5rem;
+    border-radius: 4px;
+    font-size: 1rem;
+    white-space: nowrap;
+    pointer-events: none;
+    /* Ensures ::before content doesn’t interfere with hover */
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    transition-delay: .5s;
+    z-index: 101;
+}
+
+.video-ctrl-btn:hover::before {
+    opacity: 1;
+    /* Fades in the label on hover */
+}
+
 .vcb-top-div {
-    margin-bottom: auto;
+    margin-bottom: auto !important;
 }
 
 .vcb-bot-div {
-    margin-top: auto;
+    margin-top: auto !important;
 }
 
 .back-button:hover {
@@ -92,8 +116,7 @@ video:focus {
         color: #000;
     }
 
-    30% {
-        background-color: #5bda66;
+    80% {
         color: #000;
     }
 
@@ -103,6 +126,53 @@ video:focus {
     }
 }
 
-.video-ctrl-btn.cpy-btn.animate {
-    animation: clickEffect 0.5s ease;
+.video-ctrl-btn.animate {
+    animation: clickEffect 1s ease;
+}
+
+@media (max-height: 600px) {
+    .video-controls {
+        gap: .5rem;
+    }
+
+    .video-ctrl-btn {
+        font-size: 0.8rem;
+        padding: 0.8rem;
+    }
+}
+
+@media (max-width: 1000px) {
+    .video-player-overlay {
+        flex-direction: column;
+        gap: 6px;
+    }
+
+    .video-controls {
+        flex-direction: row;
+        height: auto;
+        width: 100%;
+    }
+
+    .video-controls .author-icon {
+        margin: 0;
+    }
+
+    .vcb-bot-div {
+        margin: 0 !important;
+        margin-left: auto !important;
+    }
+
+    .vcb-top-div {
+        margin: 0 !important;
+        margin-right: auto !important;
+    }
+}
+
+@media (max-width: 600px) {
+    .video-controls {
+        flex-direction: row;
+        height: auto;
+        width: 100%;
+        flex-wrap: wrap;
+    }
 }

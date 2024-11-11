@@ -95,7 +95,7 @@ function VideoItem({ video, userIcons, selectedUser, channelId, clipId, onClick 
                     {isPosterVisible ? (
                         <img
                             src={posterPath}
-                            alt={`${channelId}.${clipId} thumbnail`}
+                            alt={`${video.Filename} thumbnail`}
                             className="video-thumbnail"
                         />
                     ) : (

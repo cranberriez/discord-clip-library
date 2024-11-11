@@ -76,11 +76,8 @@ function VideoPlayer({ video, onClose, onNext, onPrevious, userIcons, channel })
             setDimensions({ width, height });
         };
 
-        // Set initial dimensions and add listener
         updateDimensions();
         window.addEventListener('resize', updateDimensions);
-
-        // Clean up event listener on component unmount
         return () => window.removeEventListener('resize', updateDimensions);
     }, []);
 
@@ -95,6 +92,10 @@ function VideoPlayer({ video, onClose, onNext, onPrevious, userIcons, channel })
             setTimeout(() => {
                 onNext()
             }, 500)
+        }
+        else {
+            console.log("animated next")
+            animateClick({ id: "video-plyr-next" })
         }
     }
 
@@ -111,14 +112,18 @@ function VideoPlayer({ video, onClose, onNext, onPrevious, userIcons, channel })
     };
 
 
-    const animateClick = (event) => {
-        const button = event.currentTarget; // Reference to the button itself
+    const animateClick = ({ event = null, id = null }) => {
+        let button = null; // Reference to the button itself
+        if (event) button = event.currentTarget;
+        else if (id) button = document.getElementById(id)
+        else return
+
         button.classList.add("animate");
 
         // Remove the 'animate' class after the animation completes
         setTimeout(() => {
             button.classList.remove("animate");
-        }, 300); // Match this duration to the animation duration
+        }, 1000); // Match this duration to the animation duration
     };
 
     return (
@@ -136,8 +141,9 @@ function VideoPlayer({ video, onClose, onNext, onPrevious, userIcons, channel })
                 controls={true}
                 volume={volume}
                 muted={muted}
-                style={{ width: dimensions.width, height: dimensions.height }}
+                style={{ maxWidth: dimensions.width, maxHeight: dimensions.height }}
                 poster={posterPath}
+                playsInline
 
                 onVolumeChange={onVolumeChange}
                 onEnded={onEnded}
@@ -149,17 +155,11 @@ function VideoPlayer({ video, onClose, onNext, onPrevious, userIcons, channel })
             </MediaPlayer>
             <div
                 className="video-controls"
-                style={{ height: dimensions.height }}
+                style={{ height: window.innerWidth > 1000 ? dimensions.height : 'auto' }}
+                data-label="Close"
             >
-                <button className="video-ctrl-btn vcb-top-div" onClick={onClose}><XMarkIcon size={32} /></button>
-
-                <button className="video-ctrl-btn" onClick={onNext}><ArrowRightIcon size={32} /></button>
-                <button className="video-ctrl-btn" onClick={onPrevious}><ArrowLeftIcon size={32} /></button>
-                <button className='video-ctrl-btn' onClick={() => setAutoplay(prev => !prev)}>
-                    {!autoplay && <RepeatSquareIcon size={32} />}
-                    {autoplay && <PlaybackSpeedCircleIcon size={32} />}
-                </button>
-                <div className="author-icon vcb-bot-div" >
+                <button className="video-ctrl-btn" data-label="Close" onClick={onClose}><XMarkIcon size={32} /></button>
+                <div className="author-icon vcb-top-div" >
                     {authorIcon && <img
                         src={authorIcon}
                         alt={`${video.Poster}'s icon`}
@@ -167,15 +167,24 @@ function VideoPlayer({ video, onClose, onNext, onPrevious, userIcons, channel })
                     />}
                 </div>
 
+                <button className="video-ctrl-btn" id="video-plyr-next" data-label="Next" onClick={onNext}><ArrowRightIcon size={32} /></button>
+                <button className="video-ctrl-btn" id="video-plyr-prev" data-label="Previous" onClick={onPrevious}><ArrowLeftIcon size={32} /></button>
+
+                <button className='video-ctrl-btn' data-label="Autoplay" onClick={() => setAutoplay(prev => !prev)}>
+                    {!autoplay && <RepeatSquareIcon size={32} />}
+                    {autoplay && <PlaybackSpeedCircleIcon size={32} />}
+                </button>
+
                 <button
-                    className="video-ctrl-btn cpy-btn"
+                    className="video-ctrl-btn cpy-btn vcb-bot-div"
+                    data-label="Copy Link"
                     onClick={(event) => {
                         copyToClipboard(`?clip=${vidID}&chan=${channelId}`)
-                        animateClick(event)
+                        animateClick({ event: event })
                     }}
                 ><LinkIcon size={32} /></button>
 
-                <a href={video.Link_to_message} target="_blank"><button className="video-ctrl-btn">
+                <a href={video.Link_to_message} target="_blank"><button className="video-ctrl-btn" data-label="View In Discord">
                     <FontAwesomeIcon icon={faDiscord} className="icon" style={{ width: "32px", height: "32px" }} />
                 </button></a>
 
