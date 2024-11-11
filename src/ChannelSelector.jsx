@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import "./channelselector.css"
+import "./ChannelSelector.css"
 
 function ChannelSelector({ CHANNELS, channel, setChannel }) {
     const [isOpen, setIsOpen] = useState(false);
