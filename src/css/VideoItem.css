@@ -9,6 +9,7 @@
     max-width: 500px;
     margin: 0.5rem;
     font-size: 1rem;
+    flex-grow: 1;
 }
 
 .video-card.active .video-wrapper {
@@ -52,13 +53,60 @@
     font-size: 1rem;
 }
 
-.video-subtext {
+.video-expired-cont {
+    position: absolute;
+    top: 3%;
+    right: 1%;
     display: flex;
     align-items: center;
+
+    border: 1px solid #e74c3c;
+    border-radius: 50px;
+    background-color: rgba(25, 25, 25, 0.8);
+    color: #e74c3c;
+    padding: .3rem;
+    padding-left: 0;
+}
+
+.video-expired-cont:hover p {
+    max-width: 200px;
+}
+
+.video-expired-icon {
+    display: flex;
+    align-items: center;
+}
+
+.video-expired-cont p {
+    max-width: 0;
+    margin-left: .3rem;
+    overflow: hidden;
+    white-space: nowrap;
+    transition: max-width .3s ease;
+}
+
+.video-details {
+    display: flex;
+    gap: 1rem;
+}
+
+.video-subtext {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
     margin-top: 0.5rem;
     font-size: 1rem;
-    padding: 0 1rem;
     position: relative;
+}
+
+.video-title {
+    text-align: center;
+}
+
+.video-details .author-icon {
+    width: 3rem;
+    height: 3rem;
+    margin: auto 0;
 }
 
 .author-text {
@@ -68,7 +116,7 @@
 
 .date {
     color: #777;
-    margin-left: auto;
+    font-size: .8rem;
 }
 
 .video-subtext p:last-child {

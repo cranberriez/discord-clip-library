@@ -1,4 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
+import { TimerIcon } from '@vidstack/react/icons';
 import './css/VideoItem.css';
 
 function capitalizeFirstLetter(str) {
@@ -9,6 +10,12 @@ function formatDate(dateString) {
     const date = new Date(dateString);
     const options = { month: 'short', day: 'numeric', year: 'numeric' };
     return date.toLocaleDateString('en-US', options);
+}
+
+function isExpired(expiredDate) {
+    const currentTime = new Date();
+    const expirationTime = new Date(expiredDate);
+    return expirationTime < currentTime;
 }
 
 function formatTitle(title) {
@@ -58,6 +65,7 @@ function VideoItem({ video, userIcons, clipId, onClick }) {
     const dateText = formatDate(video.Date);
     const vidId = video.Id
     const posterPath = `${import.meta.env.BASE_URL}thumb/${vidId}.png`;
+    const expired = isExpired(video.Expire_Timestamp)
 
     useEffect(() => {
         if (vidId === clipId) {
@@ -96,11 +104,16 @@ function VideoItem({ video, userIcons, clipId, onClick }) {
                         <p>Loading...</p>
                     </div>
                 )}
+                {expired &&
+                    (<div className='video-expired-cont'>
+                        <p>Expired</p>
+                        <div className='video-expired-icon'>
+                            <TimerIcon size={24} />
+                        </div>
+                    </div>)
+                }
             </div>
-            <div className='video-title'>
-                <p>{vidTitle}</p>
-            </div>
-            <div className="video-subtext">
+            <div className="video-details">
                 {authorIcon && (
                     <img
                         src={authorIcon}
@@ -108,8 +121,11 @@ function VideoItem({ video, userIcons, clipId, onClick }) {
                         className="author-icon"
                     />
                 )}
-                <p className="author-text">{authorText}</p>
-                <p className="date">{dateText}</p>
+                <div className='video-subtext'>
+                    <p>{vidTitle}</p>
+                    <p className="author-text">{authorText}</p>
+                    <p className="date">{dateText}</p>
+                </div>
             </div>
         </div>
     );
