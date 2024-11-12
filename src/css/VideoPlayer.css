@@ -5,48 +5,47 @@
     width: 100vw;
     height: 100vh;
     background-color: rgba(0, 0, 0, 0.9);
+
     display: grid;
     align-items: flex-start;
     justify-content: center;
-    grid-template-columns: minmax(1fr, var(--max-width)) min-content;
-    grid-template-rows: minmax(1fr, var(--max-width)) min-content;
+    grid-template-columns: 1fr min-content;
+    grid-template-rows: 1fr min-content;
     grid-template-areas:
         "player controls"
         "details details";
 
     z-index: 99;
     overflow: hidden;
-    padding: .5rem;
+    padding: 1rem;
     gap: 10px;
 }
 
-.video-player {
+.video-player-cont {
     grid-area: player;
     justify-self: center;
 
-    width: 100%;
-    max-width: 95vw;
-    max-height: 95vh;
+    display: flex;
+    justify-content: center;
 
-    background-color: #000;
+    width: 100%;
+    height: 100%;
+
+    /* background-color: #000; */
     border-radius: 12px;
     outline: 0;
 }
 
+.video-player {}
+
 .video-controls {
     grid-area: controls;
-    justify-self: start;
-
-    height: 100%;
-
-    padding: .2rem;
     display: flex;
-    align-items: center;
     flex-direction: column;
-    z-index: 99;
-
-    border-radius: 4px;
+    align-items: center;
     gap: 1rem;
+    padding: 0.5rem;
+    max-height: 100%;
 }
 
 .video-controls .author-icon {
@@ -159,6 +158,13 @@ video:focus {
     .video-player-overlay {
         flex-direction: column;
         gap: 6px;
+
+        grid-template-columns: auto;
+        grid-template-rows: min-content min-content min-content;
+        grid-template-areas:
+            "player"
+            "controls"
+            "details";
     }
 
     .video-controls {

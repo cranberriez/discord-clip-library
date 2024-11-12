@@ -1,8 +1,6 @@
 import React, { useEffect, useState, useMemo } from 'react';
 import VideoItem from './VideoItem';
-import UserSelector from './UserSelector';
 import VideoPlayer from './VideoPlayer';
-import ChannelSelector from './ChannelSelector';
 import Navbar from './Navbar';
 import './css/App.css';
 
@@ -39,6 +37,10 @@ function App() {
     const [userIcons, setUserIcons] = useState({});
     const [selectedUser, setSelectedUser] = useState(null);
 
+    // Loading states
+    const [videosLoading, setVideosLoading] = useState(true);
+    const [iconsLoading, setIconsLoading] = useState(true);
+
     // Current playing video / skip to video
     const [activeVideo, setActiveVideo] = useState(null);
     const [clipId, setClipId] = useState(null);
@@ -60,6 +62,7 @@ function App() {
                 })
             );
             setBaseVideos(videoData);
+            setVideosLoading(false);
         };
 
         fetchData();
@@ -90,7 +93,10 @@ function App() {
     useEffect(() => {
         fetch(`${import.meta.env.BASE_URL}user_icons.json`)
             .then((response) => response.json())
-            .then((data) => setUserIcons(data))
+            .then((data) => {
+                setUserIcons(data)
+                setIconsLoading(false);
+            })
             .catch((error) => console.error("Error loading user icons:", error));
     }, []);
 
@@ -126,6 +132,11 @@ function App() {
         const previousIndex = (currentIndex - 1 + filteredVideos.length) % filteredVideos.length;
         return filteredVideos[previousIndex];
     };
+
+    // Display a loading message until both videos and user icons are fully loaded
+    if (videosLoading || iconsLoading) {
+        return <p>Loading content, please wait...</p>;
+    }
 
     return (
         <div className="App">

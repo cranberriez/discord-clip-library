@@ -58,7 +58,6 @@
 
 .nav-author-prev .author-icon:nth-child(n) {
     z-index: calc(100 - var(--i));
-    /* where --i is an index for each icon */
 }
 
 .nav-author-prev .prev-single-author {
@@ -144,7 +143,6 @@
 .filter-author-cont {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-    ;
     gap: 1rem;
 }
 

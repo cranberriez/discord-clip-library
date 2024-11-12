@@ -30,6 +30,8 @@ function VideoPlayer({ video, onClose, onNext, onPrevious, userIcons, channel })
     const vidId = video.Id
     const posterPath = `${import.meta.env.BASE_URL}thumb/${vidId}.png`;
 
+    const vidDescription = video.Description ? "• " + video.Description.replace(/<@(\d+)>/, "") : "";
+
     useEffect(() => {
         const handleKeyPress = (event) => {
             switch (event.key) {
@@ -120,28 +122,34 @@ function VideoPlayer({ video, onClose, onNext, onPrevious, userIcons, channel })
 
     return (
         <div className="video-player-overlay" style={{ "--max-width": dimensions.width, "--max-height": dimensions.width }}>
-            <MediaPlayer
-                className="video-player"
-                ref={mediaPlayerRef}
-                src={video.Attachment_URL}
-
-                title={title}
-
-                aspectRatio="16/9"
-                load="eager"
-                autoPlay={true}
-                controls={true}
-                volume={volume}
-                muted={muted}
-                style={{ maxWidth: dimensions.width, maxHeight: dimensions.height }}
-                poster={posterPath}
-                playsInline
-
-                onVolumeChange={onVolumeChange}
-                onEnded={onEnded}
+            <div
+                className='video-player-cont'
+                style={{ maxHeight: dimensions.height }}
             >
-                <MediaProvider className='video-provider' />
-            </MediaPlayer>
+                <MediaPlayer
+                    className="video-player"
+                    ref={mediaPlayerRef}
+                    src={video.Attachment_URL}
+
+                    title={title}
+
+                    aspectRatio="16/9"
+                    load="eager"
+                    autoPlay={true}
+                    controls={true}
+                    volume={volume}
+                    muted={muted}
+                    style={{ maxWidth: dimensions.width, maxHeight: dimensions.height }}
+                    poster={posterPath}
+                    playsInline
+
+                    onVolumeChange={onVolumeChange}
+                    onEnded={onEnded}
+                >
+                    <MediaProvider className='video-provider' />
+                </MediaPlayer>
+            </div>
+
             <div
                 className="video-controls"
                 style={{ height: window.innerWidth > 1000 ? dimensions.height : 'auto' }}
@@ -176,13 +184,10 @@ function VideoPlayer({ video, onClose, onNext, onPrevious, userIcons, channel })
                 <a href={video.Link_to_message} target="_blank"><button className="video-ctrl-btn" data-label="View In Discord">
                     <FontAwesomeIcon icon={faDiscord} className="icon" style={{ width: "32px", height: "32px" }} />
                 </button></a>
-
-
-                {/* <ShareArrowIcon size={32} /> */}
             </div>
             <div className='video-details'>
                 <p className='video-title'>{title}</p>
-                <p className='video-description'>{video.Description ? "• " + video.Description : ""}</p>
+                <p className='video-description'>{vidDescription}</p>
             </div>
         </div >
     );
