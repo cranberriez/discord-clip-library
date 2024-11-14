@@ -185,9 +185,9 @@ function VideoPlayer({ video, onClose, onNext, onPrevious, userIcons, channel })
                     <FontAwesomeIcon icon={faDiscord} className="icon" style={{ width: "32px", height: "32px" }} />
                 </button></a>
             </div>
-            <div className='video-details'>
-                <p className='video-title'>{title}</p>
-                <p className='video-description'>{vidDescription}</p>
+            <div className='video-player-details'>
+                <p className='player-title'>{title}</p>
+                <p className='player-description'>{vidDescription}</p>
             </div>
         </div >
     );

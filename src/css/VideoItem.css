@@ -43,6 +43,18 @@
         0 15px 40px rgba(20, 20, 22, 0.2);
 }
 
+.video-wrapper .video-runtime {
+    position: absolute;
+    bottom: 0;
+    right: 0;
+
+    margin: 1%;
+    padding: 1% 2%;
+    background-color: rgba(0, 0, 0, 0.2);
+    border-radius: 8px;
+    font-size: .8rem;
+}
+
 .video-thumbnail {
     width: 100%;
     height: 100%;

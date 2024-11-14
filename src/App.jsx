@@ -24,13 +24,46 @@ const CHANNELS = {
     "677367926176874509": {
         name: "Overwatch",
         filepath: "filtered_messages_677367926176874509.json"
-    }
+    },
+    "620814611137953812": {
+        name: "Gaming Moments",
+        filepath: "filtered_messages_620814611137953812.json"
+    },
+    "796860146382405642": {
+        name: "For Honor",
+        filepath: "filtered_messages_796860146382405642.json"
+    },
+    "1283675776780075058": {
+        name: "Deadlock",
+        filepath: "filtered_messages_1283675776780075058.json"
+    },
+    "680162852199596045": {
+        name: "Destiny",
+        filepath: "filtered_messages_680162852199596045.json"
+    },
+    "869025643889819700": {
+        name: "New World",
+        filepath: "filtered_messages_869025643889819700.json"
+    },
+    "1091159481200689262": {
+        name: "CS:GO",
+        filepath: "filtered_messages_1091159481200689262.json"
+    },
+    "1205547794069463061": {
+        name: "Helldivers",
+        filepath: "filtered_messages_1205547794069463061.json"
+    },
+    "946788298096001094": {
+        name: "Elden Ring",
+        filepath: "filtered_messages_946788298096001094.json"
+    },
 }
 
 function App() {
     // Videos and filtering state
     const [baseVideos, setBaseVideos] = useState({});
     const [filteredVideos, setFilteredVideos] = useState([]);
+    const [runtimes, setRuntimes] = useState({});
     const [selectedChannel, setSelectedChannel] = useState("675233762900049930");
 
     // User data state
@@ -40,6 +73,7 @@ function App() {
     // Loading states
     const [videosLoading, setVideosLoading] = useState(true);
     const [iconsLoading, setIconsLoading] = useState(true);
+    const [runtimesLoading, setRuntimesLoading] = useState(true);
 
     // Current playing video / skip to video
     const [activeVideo, setActiveVideo] = useState(null);
@@ -68,26 +102,57 @@ function App() {
         fetchData();
     }, []);
 
-    // Filter videos by `channelId` and `selectedUser`
+    // Filter videos by `channelId` and `selectedUser`, and sort by `Date`
     useEffect(() => {
+        if (!baseVideos) return;
+
         const applyFilters = () => {
-            const channelVideos = baseVideos[selectedChannel] || [];
-            const userFiltered = channelVideos.filter((video) => video.Poster === selectedUser || selectedUser === null)
-            setFilteredVideos(userFiltered);
+            let channelVideos = [];
+
+            if (selectedChannel === "all") {
+                // Combine videos from all channels
+                channelVideos = Object.values(baseVideos).flatMap((videos) => Object.values(videos));
+            } else if (baseVideos[selectedChannel]) {
+                // Get videos from the selected channel
+                channelVideos = Object.values(baseVideos[selectedChannel]);
+            }
+
+            // Filter videos by user
+            const userFiltered = channelVideos.filter((video) =>
+                video.Poster === selectedUser || selectedUser === null
+            );
+
+            // Sorting toggle (true for ascending, false for descending)
+            const newestFirst = true; // Replace with your state or variable
+
+            // Sort the filtered videos by `Date` in the specified order
+            const sortedVideos = userFiltered.sort((a, b) => {
+                const timestampA = new Date(a.Date);
+                const timestampB = new Date(b.Date);
+
+                // Flip sorting based on `isAscending`
+                return newestFirst
+                    ? timestampB - timestampA // Descending
+                    : timestampA - timestampB; // Ascending
+            });
+
+            setFilteredVideos(sortedVideos);
         };
 
         applyFilters();
     }, [baseVideos, selectedChannel, selectedUser]);
 
+
     // Get # of clips per poster
     const posterCounts = useMemo(() => {
-        if (!baseVideos || baseVideos.length <= 0 || !baseVideos[selectedChannel]) return {};
+        if (!filteredVideos || filteredVideos.length <= 0) return {};
 
-        return baseVideos[selectedChannel].reduce((acc, item) => {
+        return filteredVideos.reduce((acc, item) => {
             acc[item.Poster] = (acc[item.Poster] || 0) + 1;
             return acc;
         }, {});
-    }, [selectedChannel, baseVideos]);
+    }, [filteredVideos]);
+
 
     // Fetch user icons json data
     useEffect(() => {
@@ -98,6 +163,17 @@ function App() {
                 setIconsLoading(false);
             })
             .catch((error) => console.error("Error loading user icons:", error));
+    }, []);
+
+    // Fetch runtimes json data
+    useEffect(() => {
+        fetch(`${import.meta.env.BASE_URL}runtime_data.json`)
+            .then((response) => response.json())
+            .then((data) => {
+                setRuntimes(data)
+                setRuntimesLoading(false);
+            })
+            .catch((error) => console.error("Error loading runtimes:", error));
     }, []);
 
     // Toggle overflow on body based on active video, and set active video
@@ -134,7 +210,7 @@ function App() {
     };
 
     // Display a loading message until both videos and user icons are fully loaded
-    if (videosLoading || iconsLoading) {
+    if (videosLoading || iconsLoading || runtimesLoading) {
         return <p>Loading content, please wait...</p>;
     }
 
@@ -153,11 +229,12 @@ function App() {
                 {filteredVideos.length > 0 ? (
                     filteredVideos.map((video) => (
                         <VideoItem
-                            key={video.Attachment_URL}
+                            key={video.Id}
                             video={video}
                             userIcons={userIcons[selectedChannel]}
                             selectedUser={selectedUser}
                             channelId={selectedChannel}
+                            runtime={runtimes[selectedChannel][video.Id]}
                             clipId={clipId}
                             onClick={setActiveVideo} // Set active video when clicked
                         />

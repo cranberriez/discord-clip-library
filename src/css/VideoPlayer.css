@@ -36,8 +36,6 @@
     outline: 0;
 }
 
-.video-player {}
-
 .video-controls {
     grid-area: controls;
     display: flex;
@@ -131,17 +129,17 @@ video:focus {
     animation: clickEffect 1s ease;
 }
 
-.video-details {
+.video-player-details {
     grid-area: details;
     display: flex;
     align-items: center;
+    justify-content: center;
 }
 
-.video-title {
+.player-title {
     font-size: 1.2em;
 }
 
-.video-description {}
 
 @media (max-height: 600px) {
     .video-controls {

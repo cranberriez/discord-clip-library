@@ -35,7 +35,24 @@ function formatTitle(title) {
     )
 }
 
-function VideoItem({ video, userIcons, clipId, onClick }) {
+function formatTime(seconds) {
+    if (!seconds) return null
+
+    // Determine the total number of hours, minutes, and seconds
+    const hours = Math.floor(seconds / 3600);
+    const minutes = Math.floor((seconds % 3600) / 60);
+    const remainingSeconds = seconds % 60;
+
+    if (hours > 0) {
+        // Format as HH:MM:SS
+        return `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:${String(remainingSeconds.toFixed(0)).padStart(2, '0')}`;
+    } else {
+        // Format as MM:SS
+        return `${String(minutes).padStart(1, '0')}:${String(remainingSeconds.toFixed(0)).padStart(2, '0')}`;
+    }
+}
+
+function VideoItem({ video, userIcons, clipId, runtime, onClick }) {
     const containerRef = useRef(null);
     const [isPosterVisible, setIsPosterVisible] = useState(false);
     const [isActive, setIsActive] = useState(false);
@@ -71,8 +88,7 @@ function VideoItem({ video, userIcons, clipId, onClick }) {
     const vidId = video.Id
     const posterPath = `${import.meta.env.BASE_URL}thumb/${vidId}.png`;
     const expired = isExpired(video.Expire_Timestamp)
-
-    if (video.Description.length > 0) console.log(video.Description)
+    const vidLength = formatTime(runtime)
 
     useEffect(() => {
         if (vidId === clipId) {
@@ -100,6 +116,7 @@ function VideoItem({ video, userIcons, clipId, onClick }) {
     return (
         <div className={`video-card ${isActive ? 'active' : ''}`} ref={containerRef} id={vidId}>
             <div className="video-wrapper" onClick={() => { onClick(video); setIsActive(false) }}>
+                {vidLength && <div className='video-runtime'>{vidLength}</div>}
                 {isPosterVisible ? (
                     <img
                         src={posterPath}
