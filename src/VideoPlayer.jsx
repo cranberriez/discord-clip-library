@@ -1,4 +1,5 @@
 import React, { useEffect, useState, useRef } from 'react';
+import usePosterPath from "./utils/usePosterPath";
 import '@vidstack/react/player/styles/default/theme.css';
 import './css/VideoPlayer.css';
 
@@ -16,7 +17,7 @@ function formatString(str) {
         .replace(/\b\w/g, (char) => char.toUpperCase());
 }
 
-function VideoPlayer({ video, onClose, onNext, onPrevious, userIcons, channel }) {
+function VideoPlayer({ video, onClose, onNext, onPrevious, userIcons, urlCache }) {
     const [dimensions, setDimensions] = useState({ width: 0, height: 0 });
     const [volume, setVolume] = useState(0.2); // Default volume
     const [muted, setMuted] = useState(false); // Default muted status
@@ -25,10 +26,12 @@ function VideoPlayer({ video, onClose, onNext, onPrevious, userIcons, channel })
     const mediaStore = useMediaStore(mediaPlayerRef);
 
     if (!video) return null;
-    const authorIcon = userIcons[channel][video.Poster] || null;
+    const channelId = String(video.channelId);
+
+    const authorIcon = userIcons?.[channelId]?.[video.Poster] || null;
     const title = formatString(video.Filename);
     const vidId = video.Id
-    const posterPath = `${import.meta.env.BASE_URL}thumb/${vidId}.png`;
+    const posterPath = usePosterPath(video.Id, true, urlCache);
 
     const vidDescription = video.Description ? "• " + video.Description.replace(/<@(\d+)>/, "") : "";
 

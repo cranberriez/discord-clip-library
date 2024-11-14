@@ -1,4 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
+import usePosterPath from "./utils/usePosterPath";
 import { TimerIcon } from '@vidstack/react/icons';
 import './css/VideoItem.css';
 
@@ -52,7 +53,7 @@ function formatTime(seconds) {
     }
 }
 
-function VideoItem({ video, userIcons, clipId, runtime, onClick }) {
+function VideoItem({ video, userIcons, clipId, runtime, onClick, urlCache }) {
     const containerRef = useRef(null);
     const [isPosterVisible, setIsPosterVisible] = useState(false);
     const [isActive, setIsActive] = useState(false);
@@ -86,7 +87,7 @@ function VideoItem({ video, userIcons, clipId, runtime, onClick }) {
     const authorText = formatUsername(video.Poster);
     const dateText = formatDate(video.Date);
     const vidId = video.Id
-    const posterPath = `${import.meta.env.BASE_URL}thumb/${vidId}.png`;
+    const posterPath = usePosterPath(video.Id, isPosterVisible, urlCache);
     const expired = isExpired(video.Expire_Timestamp)
     const vidLength = formatTime(runtime)
 
@@ -117,7 +118,7 @@ function VideoItem({ video, userIcons, clipId, runtime, onClick }) {
         <div className={`video-card ${isActive ? 'active' : ''}`} ref={containerRef} id={vidId}>
             <div className="video-wrapper" onClick={() => { onClick(video); setIsActive(false) }}>
                 {vidLength && <div className='video-runtime'>{vidLength}</div>}
-                {isPosterVisible ? (
+                {isPosterVisible && posterPath ? (
                     <img
                         src={posterPath}
                         alt={`${video.Filename} thumbnail`}

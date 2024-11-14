@@ -79,6 +79,9 @@ function App() {
     const [activeVideo, setActiveVideo] = useState(null);
     const [clipId, setClipId] = useState(null);
 
+    // Signed Url Cache for video thumbnails
+    const urlCache = useMemo(() => new Map(), []);
+
     // Load all JSON data once and store it in `baseVideos`
     useEffect(() => {
         const fetchData = async () => {
@@ -237,6 +240,7 @@ function App() {
                             runtime={runtimes[selectedChannel][video.Id]}
                             clipId={clipId}
                             onClick={setActiveVideo} // Set active video when clicked
+                            urlCache={urlCache}
                         />
                     ))
                 ) : (
@@ -251,7 +255,7 @@ function App() {
                     onNext={() => setActiveVideo(getNextVideo())}
                     onPrevious={() => setActiveVideo(getPreviousVideo())}
                     userIcons={userIcons}
-                    channel={selectedChannel}
+                    urlCache={urlCache}
                 />
             )}
         </div>
