@@ -98,7 +98,7 @@ function App() {
     // Video List Pagination
     const [paginatedVideos, setPaginatedVideos] = useState([]);
     const [page, setPage] = useState(0);
-    const itemsPerPage = 50;
+    const itemsPerPage = 150;
 
     // Load all JSON data once and store it in `baseVideos`
     useEffect(() => {
@@ -257,22 +257,40 @@ function App() {
     }, []);
 
 
+    // Declare useRef at the top level
+    const lastScrollTop = useRef(0);
+    const lastTimestamp = useRef(Date.now());
+
     // Update paginatedVideos whenever filteredVideos or page changes
     useEffect(() => {
         const newVideos = filteredVideos.slice(0, (page + 1) * itemsPerPage);
         setPaginatedVideos(newVideos);
     }, [filteredVideos, page]);
 
-    // Handle infinite scroll
+    // Handle infinite scroll with dynamic buffer
     useEffect(() => {
         const handleScroll = debounce(() => {
             const { scrollTop, scrollHeight, clientHeight } = document.documentElement;
+
+            // Calculate dynamic buffer based on scroll speed
+            const currentTimestamp = Date.now();
+            const timeDelta = currentTimestamp - lastTimestamp.current;
+            const scrollDelta = Math.abs(scrollTop - lastScrollTop.current);
+
+            const scrollSpeed = scrollDelta / timeDelta; // Pixels per millisecond
+            const dynamicBuffer = Math.min(500, 300 + scrollSpeed * 100); // Adjust values as needed
+
+            // Trigger pagination when near the bottom with the dynamic buffer
             if (
-                scrollTop + clientHeight >= scrollHeight - 10 && // Adjust threshold as needed
+                scrollTop + clientHeight >= scrollHeight - dynamicBuffer &&
                 paginatedVideos.length < filteredVideos.length
             ) {
                 setPage((prevPage) => prevPage + 1);
             }
+
+            // Update refs for the next calculation
+            lastScrollTop.current = scrollTop;
+            lastTimestamp.current = currentTimestamp;
         }, 200); // Adjust debounce delay for smoother scrolling
 
         window.addEventListener('scroll', handleScroll);
@@ -280,7 +298,7 @@ function App() {
         return () => {
             window.removeEventListener('scroll', handleScroll);
         };
-    }, [filteredVideos, paginatedVideos]);
+    }, [filteredVideos, paginatedVideos]); // Add necessary dependencies
 
     return (
         <>

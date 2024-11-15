@@ -61,6 +61,7 @@ function VideoItem({ video, userIcons, clipId, runtimes, onClick, urlCache }) {
 
     const vidTitle = formatTitle(video.Filename);
     const authorText = formatUsername(video.Poster);
+    console.log(video.Date)
     const dateText = formatDate(video.Date);
     const vidId = video.Id
     const posterPath = usePosterPath(video.Id, urlCache);
