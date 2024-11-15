@@ -124,7 +124,7 @@ function VideoPlayer({ video, onClose, onNext, onPrevious, userIcons, urlCache }
     };
 
     return (
-        <div className="video-player-overlay" style={{ "--max-width": dimensions.width, "--max-height": dimensions.width }}>
+        <div className="video-player-overlay scroll-lock-content" style={{ "--max-width": dimensions.width, "--max-height": dimensions.width }}>
             <div
                 className='video-player-cont'
                 style={{ maxHeight: dimensions.height }}
@@ -179,7 +179,7 @@ function VideoPlayer({ video, onClose, onNext, onPrevious, userIcons, urlCache }
                     className="video-ctrl-btn cpy-btn vcb-bot-div"
                     data-label="Copy Link"
                     onClick={(event) => {
-                        copyToClipboard(`?clip=${vidId}&chan=${channel}`)
+                        copyToClipboard(`?clip=${vidId}&chan=${channelId}`)
                         animateClick({ event: event })
                     }}
                 ><LinkIcon size={32} /></button>

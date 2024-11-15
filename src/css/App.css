@@ -54,3 +54,20 @@
     opacity: 0;
     pointer-events: none;
 }
+
+.no-scroll {
+    overflow: hidden;
+    /* Hides scrollbar */
+    pointer-events: none;
+    /* Prevents interactions */
+    position: fixed;
+    /* Locks the page in place */
+    width: 100%;
+    /* Ensures layout remains unchanged */
+    height: 100%;
+}
+
+.scroll-lock-content {
+    pointer-events: auto;
+    /* Enables interactions inside the modal */
+}

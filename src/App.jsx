@@ -186,24 +186,62 @@ function App() {
             .catch((error) => console.error("Error loading runtimes:", error));
     }, []);
 
-    // Toggle overflow on body based on active video, and set active video
+    // Set clipId to activeVideo
     useEffect(() => {
-        document.body.style.overflow = activeVideo ? 'hidden' : 'auto';
         if (activeVideo) {
             setClipId(activeVideo.Id)
         }
+    }, [activeVideo]);
+
+    // Prevent scroll on root when video is selected
+    // Declare useRef to store the scroll position
+    const scrollPosition = useRef(0);
+
+    // Save scroll position when opening VideoPlayer
+    useEffect(() => {
+        const appRoot = document.getElementById('root');
+
+        if (activeVideo) {
+            // Save current scroll position
+            scrollPosition.current = document.documentElement.scrollTop || document.body.scrollTop;
+            appRoot.classList.add('no-scroll');
+        } else if (!activeVideo && scrollPosition.current) {
+            // Restore scroll position when closing VideoPlayer
+            window.scrollTo(0, scrollPosition.current);
+            appRoot.classList.remove('no-scroll');
+        }
         return () => {
-            document.body.style.overflow = 'auto'; // Reset on cleanup
+            appRoot.classList.remove('no-scroll'); // Clean up when `clipId` is unset
         };
     }, [activeVideo]);
 
     // Get and Set Query Params if they exist
     useEffect(() => {
         const params = new URLSearchParams(window.location.search);
-        setClipId(params.get('clip'));
+        const queryClip = params.get('clip');
         const queryChan = params.get('chan');
-        if (queryChan) setSelectedChannel(String(queryChan));
+
+        if (queryChan) {
+            setSelectedChannel(String(queryChan));
+        }
+
+        if (queryClip && queryChan) {
+            // Store the query clip temporarily until videos are filtered
+            setClipId(queryClip);
+        }
     }, []);
+
+    // Watch for selectedChannel and clipId updates to set the active video
+    useEffect(() => {
+        if (clipId && selectedChannel) {
+            // Wait for filteredVideos to contain the clipId video
+            const targetVideo = filteredVideos.find((video) => video.Id === clipId);
+
+            if (targetVideo) {
+                setActiveVideo(targetVideo);
+            }
+        }
+    }, [clipId, selectedChannel, filteredVideos]);
 
     const getNextVideo = () => {
         if (!activeVideo) return null;
@@ -255,7 +293,6 @@ function App() {
             }
         };
     }, []);
-
 
     // Declare useRef at the top level
     const lastScrollTop = useRef(0);

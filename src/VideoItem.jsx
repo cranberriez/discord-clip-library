@@ -72,7 +72,6 @@ function VideoItem({ video, userIcons, clipId, runtimes, onClick, urlCache }) {
 
     const vidTitle = formatTitle(video.Filename);
     const authorText = formatUsername(video.Poster);
-    console.log(video.Date)
     const dateText = formatDate(video.Date);
     const vidId = video.Id
     const posterPath = usePosterPath(video.Id, urlCache);
@@ -83,31 +82,12 @@ function VideoItem({ video, userIcons, clipId, runtimes, onClick, urlCache }) {
     const vidLength = formatTime(runtime)
 
     useEffect(() => {
-        if (vidId === clipId) {
-            setIsActive(true)
-            // Add 100ms delay before scrolling
-            setTimeout(() => {
-                const element = document.getElementById(vidId);
-                if (element) {
-                    const elementPosition = element.getBoundingClientRect().top + window.scrollY;
-                    const offset = window.innerHeight * 0.2; // 20% viewport height
-
-                    // Scroll to position with offset for padding at the top
-                    window.scrollTo({
-                        top: elementPosition - offset,
-                        behavior: 'smooth',
-                    });
-                }
-            }, 100); // 100ms delay
-        }
-        else {
-            setIsActive(false);
-        }
+        setIsActive(vidId === clipId)
     }, [vidId, clipId]);
 
     return (
         <div className={`video-card ${isActive ? 'active' : ''}`} id={vidId}>
-            <div className="video-wrapper" onClick={() => { onClick(video); setIsActive(false) }}>
+            <div className="video-wrapper" onClick={() => { onClick(video); }}>
                 {vidLength && <div className='video-runtime'>{vidLength}</div>}
                 {posterPath ? (
                     <img
