@@ -1,8 +1,11 @@
-import React, { useEffect, useState, useMemo } from 'react';
+import React, { useEffect, useState, useMemo, useRef } from 'react';
+import { usePosterCountsFactory } from './hooks/usePosterCountsFactory';
 import VideoItem from './VideoItem';
 import VideoPlayer from './VideoPlayer';
 import Navbar from './Navbar';
 import './css/App.css';
+import { throttle } from 'lodash';
+import debounce from 'lodash.debounce';
 
 const CHANNELS = {
     "675233762900049930": {
@@ -60,11 +63,13 @@ const CHANNELS = {
 }
 
 function App() {
+    const [showLoader, setShowLoader] = useState(true);
+
     // Videos and filtering state
     const [baseVideos, setBaseVideos] = useState({});
     const [filteredVideos, setFilteredVideos] = useState([]);
     const [runtimes, setRuntimes] = useState({});
-    const [selectedChannel, setSelectedChannel] = useState("675233762900049930");
+    const [selectedChannel, setSelectedChannel] = useState("all");
 
     // User data state
     const [userIcons, setUserIcons] = useState({});
@@ -81,6 +86,19 @@ function App() {
 
     // Signed Url Cache for video thumbnails
     const urlCache = useMemo(() => new Map(), []);
+
+    // Track visible videos
+    const [visibleVideos, setVisibleVideos] = useState({});
+    const videoGridRef = useRef(null);
+
+    // Poster counts
+    // Get # of clips per poster
+    const getPosterCounts = usePosterCountsFactory(baseVideos);
+
+    // Video List Pagination
+    const [paginatedVideos, setPaginatedVideos] = useState([]);
+    const [page, setPage] = useState(0);
+    const itemsPerPage = 50;
 
     // Load all JSON data once and store it in `baseVideos`
     useEffect(() => {
@@ -143,19 +161,8 @@ function App() {
         };
 
         applyFilters();
+        setPage(0)
     }, [baseVideos, selectedChannel, selectedUser]);
-
-
-    // Get # of clips per poster
-    const posterCounts = useMemo(() => {
-        if (!filteredVideos || filteredVideos.length <= 0) return {};
-
-        return filteredVideos.reduce((acc, item) => {
-            acc[item.Poster] = (acc[item.Poster] || 0) + 1;
-            return acc;
-        }, {});
-    }, [filteredVideos]);
-
 
     // Fetch user icons json data
     useEffect(() => {
@@ -212,53 +219,116 @@ function App() {
         return filteredVideos[previousIndex];
     };
 
-    // Display a loading message until both videos and user icons are fully loaded
-    if (videosLoading || iconsLoading || runtimesLoading) {
-        return <p>Loading content, please wait...</p>;
-    }
+    // Fade Loader when content has finished loading
+    useEffect(() => {
+        if (!videosLoading && !iconsLoading && !runtimesLoading) {
+            // Delay removal of loader to allow fade-out animation
+            const timeout = setTimeout(() => setShowLoader(false), 500); // Match CSS transition duration
+            return () => clearTimeout(timeout); // Cleanup timeout
+        }
+    }, [videosLoading, iconsLoading, runtimesLoading]);
+
+    // Intersection observer for videos in videogrid
+    useEffect(() => {
+        const observer = new IntersectionObserver(
+            throttle((entries) => {
+                const updatedVisibility = {};
+                entries.forEach((entry) => {
+                    updatedVisibility[entry.target.dataset.id] = entry.isIntersecting;
+                });
+                setVisibleVideos((prev) => ({ ...prev, ...updatedVisibility }));
+            }, 100), // Throttle updates to once every 100ms
+            { root: videoGridRef.current, threshold: 0.1 }
+        );
+
+        if (videoGridRef.current) {
+            videoGridRef.current.childNodes.forEach((child) =>
+                observer.observe(child)
+            );
+        }
+
+        return () => {
+            if (videoGridRef.current) {
+                videoGridRef.current.childNodes.forEach((child) =>
+                    observer.unobserve(child)
+                );
+            }
+        };
+    }, []);
+
+
+    // Update paginatedVideos whenever filteredVideos or page changes
+    useEffect(() => {
+        const newVideos = filteredVideos.slice(0, (page + 1) * itemsPerPage);
+        setPaginatedVideos(newVideos);
+    }, [filteredVideos, page]);
+
+    // Handle infinite scroll
+    useEffect(() => {
+        const handleScroll = debounce(() => {
+            const { scrollTop, scrollHeight, clientHeight } = document.documentElement;
+            if (
+                scrollTop + clientHeight >= scrollHeight - 10 && // Adjust threshold as needed
+                paginatedVideos.length < filteredVideos.length
+            ) {
+                setPage((prevPage) => prevPage + 1);
+            }
+        }, 200); // Adjust debounce delay for smoother scrolling
+
+        window.addEventListener('scroll', handleScroll);
+
+        return () => {
+            window.removeEventListener('scroll', handleScroll);
+        };
+    }, [filteredVideos, paginatedVideos]);
 
     return (
-        <div className="App">
-            {/* <div className='app-navbar'>
-                <ChannelSelector CHANNELS={CHANNELS} channel={channel} setChannel={setChannel} />
-                <UserSelector userIcons={userIcons} selectedUser={selectedUser} setSelectedUser={setSelectedUser} channel={channel} />
-            </div> */}
-            <Navbar
-                CHANNELS={CHANNELS} selectedChannel={selectedChannel} setSelectedChannel={setSelectedChannel}
-                userIcons={userIcons} selectedUser={selectedUser} setSelectedUser={setSelectedUser} posterCounts={posterCounts}
-            />
+        <>
+            {showLoader &&
+                <div className={`content-loading ${!videosLoading && !iconsLoading && !runtimesLoading ? 'fade-out' : ''}`}>
+                    <img src="./imgs/s.gif" alt="Loading..." />
+                    <h1>Loading content</h1>
+                </div>
+            }
+            {!showLoader &&
+                <div className="App">
+                    <Navbar
+                        CHANNELS={CHANNELS} selectedChannel={selectedChannel} setSelectedChannel={setSelectedChannel}
+                        userIcons={userIcons} selectedUser={selectedUser} setSelectedUser={setSelectedUser} getPosterCounts={getPosterCounts}
+                    />
 
-            <div className="video-grid">
-                {filteredVideos.length > 0 ? (
-                    filteredVideos.map((video) => (
-                        <VideoItem
-                            key={video.Id}
-                            video={video}
-                            userIcons={userIcons[selectedChannel]}
-                            selectedUser={selectedUser}
-                            channelId={selectedChannel}
-                            runtime={runtimes[selectedChannel][video.Id]}
-                            clipId={clipId}
-                            onClick={setActiveVideo} // Set active video when clicked
+                    <div ref={videoGridRef} className="video-grid">
+                        {paginatedVideos.length > 0 ? (
+                            paginatedVideos.map((video) => (
+                                <VideoItem
+                                    key={video.Id}
+                                    video={video}
+                                    userIcons={userIcons}
+                                    selectedUser={selectedUser}
+                                    channelId={selectedChannel}
+                                    runtimes={runtimes}
+                                    clipId={clipId}
+                                    onClick={setActiveVideo} // Set active video when clicked
+                                    urlCache={urlCache}
+                                />
+                            ))
+                        ) : (
+                            <p>Loading videos...</p>
+                        )}
+                    </div>
+                    {/* Render VideoPlayer if a video is selected */}
+                    {activeVideo && (
+                        <VideoPlayer
+                            video={activeVideo}
+                            onClose={() => setActiveVideo(null)}
+                            onNext={() => setActiveVideo(getNextVideo())}
+                            onPrevious={() => setActiveVideo(getPreviousVideo())}
+                            userIcons={userIcons}
                             urlCache={urlCache}
                         />
-                    ))
-                ) : (
-                    <p>Loading videos...</p>
-                )}
-            </div>
-            {/* Render VideoPlayer if a video is selected */}
-            {activeVideo && (
-                <VideoPlayer
-                    video={activeVideo}
-                    onClose={() => setActiveVideo(null)}
-                    onNext={() => setActiveVideo(getNextVideo())}
-                    onPrevious={() => setActiveVideo(getPreviousVideo())}
-                    userIcons={userIcons}
-                    urlCache={urlCache}
-                />
-            )}
-        </div>
+                    )}
+                </div>}
+        </>
     );
 }
 

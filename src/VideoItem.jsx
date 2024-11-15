@@ -1,5 +1,5 @@
-import React, { useEffect, useRef, useState } from 'react';
-import usePosterPath from "./utils/usePosterPath";
+import React, { useEffect, useState, memo } from 'react';
+import usePosterPath from "./hooks/usePosterPath";
 import { TimerIcon } from '@vidstack/react/icons';
 import './css/VideoItem.css';
 
@@ -25,7 +25,7 @@ function isExpired(expiredDate) {
 }
 
 function formatTitle(title) {
-    return capitalizeFirstLetter(
+    let output = capitalizeFirstLetter(
         title.replace(".DVR_-_Trim", "")
             .replace("DVR", "")
             .replace("_-_Made_with_Clipchamp", "")
@@ -34,6 +34,9 @@ function formatTitle(title) {
             .replace(/-/g, "")
             .replace(/\d/g, "")
     )
+    if (output.length > 1) return output
+    else return "No Title"
+
 }
 
 function formatTime(seconds) {
@@ -53,42 +56,18 @@ function formatTime(seconds) {
     }
 }
 
-function VideoItem({ video, userIcons, clipId, runtime, onClick, urlCache }) {
-    const containerRef = useRef(null);
-    const [isPosterVisible, setIsPosterVisible] = useState(false);
+function VideoItem({ video, userIcons, clipId, runtimes, onClick, urlCache }) {
     const [isActive, setIsActive] = useState(false);
 
-    useEffect(() => {
-        setIsPosterVisible(false);
-
-        const observer = new IntersectionObserver(
-            ([entry]) => {
-                if (entry.isIntersecting) {
-                    setIsPosterVisible(true);
-                }
-            },
-            { threshold: 0.1 }
-        );
-
-        if (containerRef.current) {
-            observer.observe(containerRef.current);
-        }
-
-        return () => {
-            if (containerRef.current) {
-                observer.unobserve(containerRef.current);
-            }
-            observer.disconnect();
-        };
-    }, []);
-
     const vidTitle = formatTitle(video.Filename);
-    const authorIcon = userIcons[video.Poster] || null;
     const authorText = formatUsername(video.Poster);
     const dateText = formatDate(video.Date);
     const vidId = video.Id
-    const posterPath = usePosterPath(video.Id, isPosterVisible, urlCache);
+    const posterPath = usePosterPath(video.Id, urlCache);
     const expired = isExpired(video.Expire_Timestamp)
+    const channelId = video.channelId
+    const runtime = runtimes[channelId][vidId]
+    const authorIcon = userIcons?.[channelId]?.[video.Poster] || null;
     const vidLength = formatTime(runtime)
 
     useEffect(() => {
@@ -115,10 +94,10 @@ function VideoItem({ video, userIcons, clipId, runtime, onClick, urlCache }) {
     }, [vidId, clipId]);
 
     return (
-        <div className={`video-card ${isActive ? 'active' : ''}`} ref={containerRef} id={vidId}>
+        <div className={`video-card ${isActive ? 'active' : ''}`} id={vidId}>
             <div className="video-wrapper" onClick={() => { onClick(video); setIsActive(false) }}>
                 {vidLength && <div className='video-runtime'>{vidLength}</div>}
-                {isPosterVisible && posterPath ? (
+                {posterPath ? (
                     <img
                         src={posterPath}
                         alt={`${video.Filename} thumbnail`}
@@ -156,4 +135,4 @@ function VideoItem({ video, userIcons, clipId, runtime, onClick, urlCache }) {
     );
 }
 
-export default VideoItem;
+export default memo(VideoItem);

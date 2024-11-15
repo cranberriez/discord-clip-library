@@ -1,7 +1,11 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import './css/Navbar.css';
 
 function formatChannelName(channelName) {
+    if (!channelName) return
+    if (channelName == "all") return "# all"
+
+
     return "# " + channelName
         .toLowerCase()
         .replace(/ /g, "-")
@@ -17,11 +21,11 @@ function formatUsername(username) {
     return capitalizeFirstLetter(username.replace(/_/g, ''))
 }
 
-function Navbar({ CHANNELS, selectedChannel, setSelectedChannel, userIcons, selectedUser, setSelectedUser, posterCounts }) {
+function Navbar({ CHANNELS, selectedChannel, setSelectedChannel, userIcons, selectedUser, setSelectedUser, getPosterCounts }) {
     const [isMenuVisible, setIsMenuVisible] = useState(false);
-    const selectedChannelName = formatChannelName(CHANNELS[selectedChannel].name)
+    const selectedChannelName = formatChannelName(CHANNELS[selectedChannel]?.name ?? selectedChannel)
+    const posterCounts = getPosterCounts(selectedChannel);
     const totalClipCount = Object.values(posterCounts).reduce((sum, count) => sum + count, 0);
-
 
     const flattenUserData = (data) => {
         return Object.values(data).reduce((acc, channel) => {
@@ -31,6 +35,14 @@ function Navbar({ CHANNELS, selectedChannel, setSelectedChannel, userIcons, sele
             return acc;
         }, {});
     };
+
+    useEffect(() => {
+        if (!(selectedUser in posterCounts)) setSelectedUser(null)
+    }, [posterCounts, selectedUser, selectedChannel])
+
+    const handleChannelSelect = (channel) => {
+        setSelectedChannel(channel)
+    }
 
     const handleUserSelect = (user) => {
         if (selectedUser === user) {
@@ -68,11 +80,18 @@ function Navbar({ CHANNELS, selectedChannel, setSelectedChannel, userIcons, sele
                 >
                     <div className='nav-filters-channels'>
                         <p className='filter-label'>Channel</p>
+                        <button
+                            key={"all-channel-selector123"}
+                            className={`filter-channel ${"all" === selectedChannel ? 'active' : ''}`}
+                            onClick={() => { handleChannelSelect("all") }}
+                        >
+                            {formatChannelName("all")}
+                        </button>
                         {Object.entries(CHANNELS).map(([channelId, { name }]) => (
                             <button
                                 key={channelId}
                                 className={`filter-channel ${channelId === selectedChannel ? 'active' : ''}`}
-                                onClick={() => { setSelectedChannel(channelId) }}
+                                onClick={() => { handleChannelSelect(channelId) }}
                             >
                                 {formatChannelName(name)}
                             </button>

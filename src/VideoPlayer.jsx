@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useRef } from 'react';
-import usePosterPath from "./utils/usePosterPath";
+import usePosterPath from "./hooks/usePosterPath";
 import '@vidstack/react/player/styles/default/theme.css';
 import './css/VideoPlayer.css';
 
@@ -31,7 +31,7 @@ function VideoPlayer({ video, onClose, onNext, onPrevious, userIcons, urlCache }
     const authorIcon = userIcons?.[channelId]?.[video.Poster] || null;
     const title = formatString(video.Filename);
     const vidId = video.Id
-    const posterPath = usePosterPath(video.Id, true, urlCache);
+    const posterPath = usePosterPath(video.Id, urlCache);
 
     const vidDescription = video.Description ? "• " + video.Description.replace(/<@(\d+)>/, "") : "";
 

@@ -1,11 +1,11 @@
 import { useEffect, useState } from "react";
-import { getSignedUrl } from "./getSignedUrl";
+import { getSignedUrl } from "../utils/getSignedUrl";
 
-const usePosterPath = (vidId, isPosterVisible, urlCache) => {
+const usePosterPath = (vidId, urlCache) => {
     const [posterPath, setPosterPath] = useState(null);
 
     useEffect(() => {
-        if (!isPosterVisible || !vidId) return;
+        if (!vidId) return;
 
         if (urlCache.has(vidId)) {
             // Use the cached URL
@@ -29,7 +29,7 @@ const usePosterPath = (vidId, isPosterVisible, urlCache) => {
 
             fetchUrl();
         }
-    }, [isPosterVisible, vidId, urlCache]);
+    }, [vidId, urlCache]);
 
     return posterPath;
 };
