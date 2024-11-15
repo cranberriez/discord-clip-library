@@ -98,7 +98,7 @@ function App() {
     // Video List Pagination
     const [paginatedVideos, setPaginatedVideos] = useState([]);
     const [page, setPage] = useState(0);
-    const itemsPerPage = 150;
+    const itemsPerPage = 100;
 
     // Load all JSON data once and store it in `baseVideos`
     useEffect(() => {

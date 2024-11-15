@@ -12,8 +12,19 @@ function formatUsername(username) {
     return capitalizeFirstLetter(username.replace(/_/g, ''))
 }
 
-function formatDate(dateString) {
-    const date = new Date(dateString);
+function formatDate(unixTimestamp) {
+    // Ensure the timestamp is in milliseconds
+    const timestampMs = unixTimestamp.toString().includes('.')
+        ? Math.floor(unixTimestamp * 1000)
+        : unixTimestamp;
+
+    const date = new Date(timestampMs);
+
+    if (isNaN(date)) {
+        console.warn('Invalid Unix timestamp:', unixTimestamp);
+        return 'Unknown Date'; // Fallback for invalid timestamps
+    }
+
     const options = { month: 'short', day: 'numeric', year: 'numeric' };
     return date.toLocaleDateString('en-US', options);
 }
@@ -103,6 +114,7 @@ function VideoItem({ video, userIcons, clipId, runtimes, onClick, urlCache }) {
                         src={posterPath}
                         alt={`${video.Filename} thumbnail`}
                         className="video-thumbnail"
+                        loading="lazy"
                     />
                 ) : (
                     <div className="video-placeholder">
