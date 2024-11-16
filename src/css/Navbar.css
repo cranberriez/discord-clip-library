@@ -2,18 +2,26 @@
     display: flex;
     flex-direction: column;
     align-items: center;
-    justify-content: center;
+    justify-content: flex-start;
 
     width: 100%;
     /* background-color: var(--bg-default); */
     position: fixed;
 
     z-index: 2;
+
+    transition: background-color .3ms;
+}
+
+.app-navbar.nav-open {
+    min-height: 100%;
 }
 
 .navbar-inner-cont {
-    max-width: 1000px;
+    max-width: 1100px;
     width: 80%;
+    /* min-width: fit-content; */
+    pointer-events: auto;
 }
 
 .nav-prev-cont {
@@ -21,16 +29,20 @@
     border: 2px solid var(--border-dark);
     border-top: 0;
     padding: 1rem;
+    gap: 1rem;
 
     border-radius: 0 0 5px 5px;
 
     display: grid;
-    grid-template-columns: 1fr 2fr 1fr;
+    grid-template-columns: 1fr 2fr 1fr auto;
+
+    align-items: center;
 }
 
 .nav-channel-prev {
     font-size: 1.1rem;
     width: 100%;
+    white-space: nowrap;
 }
 
 .active-channel-prev {
@@ -52,6 +64,7 @@
 }
 
 .nav-author-prev .author-icon {
+    /* NOTE IF UPDATING SIZE, MODIFY THE AUTHOR ICONS PREVIEW WIDTH */
     margin-left: -1.2rem;
     box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.2);
     border: 1px solid var(--bg-dark);
@@ -76,6 +89,32 @@
 
 .nav-total-prev p {
     color: #878787;
+    white-space: nowrap;
+}
+
+.close-navbar {
+    display: none;
+    aspect-ratio: 1/1;
+    width: 40px;
+    height: 40px;
+
+    display: flex;
+    align-items: center;
+
+    color: var(--bg-dark);
+    background-color: var(--error);
+    border-radius: 5px;
+    transition: 100ms;
+
+    cursor: pointer;
+}
+
+.app-navbar.nav-open .close-navbar {
+    opacity: 1;
+}
+
+.app-navbar:not(.nav-open) .close-navbar {
+    background-color: var(--primary);
 }
 
 
@@ -83,8 +122,9 @@
 
 .nav-filters-cont {
     display: flex;
-
     padding-top: 1rem;
+
+    overflow-y: auto;
 }
 
 
@@ -121,6 +161,12 @@
 
     color: var(--text-gray);
     cursor: pointer;
+
+    white-space: nowrap;
+    text-overflow: ellipsis;
+
+    width: fit-content;
+    overflow: hidden;
 }
 
 .filter-channel:hover {
@@ -146,7 +192,7 @@
 
 .filter-author-cont {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
     gap: 1rem;
 }
 
@@ -179,10 +225,173 @@
     text-align: left;
 }
 
+.filter-author .author-icon {
+    height: 3rem;
+    width: 3rem;
+}
+
 .filter-author-name {
-    font-size: 1.1em;
+    font-size: 1.2em;
 }
 
 .filter-author-clips {
     color: var(--text-gray);
+}
+
+@media (min-width: 1280px) {
+    .hide-close-button {
+        display: none;
+    }
+}
+
+/* Styles for small laptops and tablets in landscape mode */
+@media (max-width: 1280px) {
+    .app-navbar.nav-open {
+        background-color: rgba(0, 0, 0, 0.6);
+    }
+
+    .close-navbar {
+        display: block;
+    }
+
+    .nav-prev-cont {
+        grid-template-columns: 1fr 2fr auto auto;
+        padding: 1rem .8rem;
+    }
+
+
+    .nav-filters-cont {
+        flex-direction: column;
+        pointer-events: auto;
+        overflow-y: auto;
+        max-height: calc(100vh - 78px);
+    }
+
+    .nav-filters-channels {
+        display: flex;
+        width: 100%;
+
+        border-radius: 5px;
+        border: 0;
+    }
+
+    .filter-label {
+        width: 100%;
+        margin-bottom: .4rem;
+        grid-area: header;
+    }
+
+    .filter-channels-cont {
+        grid-area: channels;
+
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+        grid-template-areas:
+            "header"
+            "channels";
+    }
+
+    .nav-filters-authors {
+        width: 100%;
+        border-radius: 5px;
+        border: 0;
+    }
+
+    .filter-author-cont {
+        gap: 2rem;
+    }
+
+    .filter-author-text {
+        display: flex;
+        flex-direction: column;
+        gap: .2em;
+    }
+
+    .filter-author-clips {
+        font-size: .8em;
+    }
+}
+
+/* Styles for tablets in portrait orientation */
+@media (max-width: 1023px) {
+    .nav-prev-cont {
+        grid-template-columns: 1fr 1fr auto auto;
+    }
+}
+
+/* Styles for tablets in portrait orientation */
+@media (max-width: 1023px) and (min-width: 768px) {}
+
+/* Styles for large smartphones */
+@media (max-width: 767px) {
+    .navbar-inner-cont {
+        width: 100%;
+    }
+
+    .nav-prev-cont {
+        display: grid;
+        grid-template-columns: 1fr 40px;
+        grid-template-areas:
+            "title close"
+            "icons icons";
+
+        border-bottom: 1px solid black;
+        border-radius: 0;
+    }
+
+    .nav-channel-prev {
+        grid-area: title;
+    }
+
+    .nav-author-prev {
+        grid-area: icons;
+        width: 100%;
+        justify-content: flex-start;
+    }
+
+    .close-navbar {
+        grid-area: close;
+    }
+
+    .nav-total-prev {
+        display: none;
+    }
+
+    .nav-filters-cont {
+        pointer-events: auto;
+        overflow-y: auto;
+        max-height: calc(100vh - 129px);
+    }
+
+    .nav-filters-authors,
+    .nav-filters-channels {
+        border: 0;
+        border-radius: 0;
+    }
+}
+
+/* Styles for small smartphones */
+@media (max-width: 479px) {
+    .filter-author-cont {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+        gap: 1rem .3rem;
+    }
+
+    .filter-author .author-icon {
+        height: 2rem;
+        width: 2rem;
+        aspect-ratio: 1/1;
+    }
+
+    .filter-author-text {
+        font-size: .9rem;
+    }
+}
+
+
+.open-close-svgs {
+    position: relative;
+    height: 100%;
+    width: 100%;
 }

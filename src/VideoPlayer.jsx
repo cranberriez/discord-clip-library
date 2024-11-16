@@ -1,21 +1,15 @@
 import React, { useEffect, useState, useRef } from 'react';
-import usePosterPath from "./hooks/usePosterPath";
+import useSignedUrl from "./hooks/useSignedUrl";
+import { formatTitle } from './utils/formatUtils';
+import { isExpired } from './utils/videoUtils';
 import '@vidstack/react/player/styles/default/theme.css';
 import './css/VideoPlayer.css';
 
-import { MediaPlayer, MediaProvider, Title, useMediaStore } from '@vidstack/react';
+import { MediaPlayer, MediaProvider, useMediaStore } from '@vidstack/react';
 import { XMarkIcon, ArrowRightIcon, ArrowLeftIcon, RepeatSquareIcon, PlaybackSpeedCircleIcon, LinkIcon } from '@vidstack/react/icons';
 
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faDiscord } from '@fortawesome/free-brands-svg-icons';
-
-function formatString(str) {
-    return str
-        .toLowerCase()
-        .replace(".mp4", "")
-        .replace(/_/g, ' ')
-        .replace(/\b\w/g, (char) => char.toUpperCase());
-}
 
 function VideoPlayer({ video, onClose, onNext, onPrevious, userIcons, urlCache }) {
     const [dimensions, setDimensions] = useState({ width: 0, height: 0 });
@@ -29,9 +23,10 @@ function VideoPlayer({ video, onClose, onNext, onPrevious, userIcons, urlCache }
     const channelId = String(video.channelId);
 
     const authorIcon = userIcons?.[channelId]?.[video.Poster] || null;
-    const title = formatString(video.Filename);
+    const title = formatTitle(video.Filename);
     const vidId = video.Id
-    const posterPath = usePosterPath(video.Id, urlCache);
+    const expired = isExpired(video.Expire_Timestamp)
+    const posterPath = useSignedUrl(`${video.Id}.png`, "thumb", urlCache);
 
     const vidDescription = video.Description ? "• " + video.Description.replace(/<@(\d+)>/, "") : "";
 
@@ -129,6 +124,7 @@ function VideoPlayer({ video, onClose, onNext, onPrevious, userIcons, urlCache }
                 className='video-player-cont'
                 style={{ maxHeight: dimensions.height }}
             >
+                {expired && <ExpiredOverlay />}
                 <MediaPlayer
                     className="video-player"
                     ref={mediaPlayerRef}
@@ -194,6 +190,16 @@ function VideoPlayer({ video, onClose, onNext, onPrevious, userIcons, urlCache }
             </div>
         </div >
     );
+}
+
+function ExpiredOverlay() {
+    return (
+        <div className='expired-overlay'>
+            <p>
+                Video Expired
+            </p>
+        </div>
+    )
 }
 
 export default VideoPlayer;

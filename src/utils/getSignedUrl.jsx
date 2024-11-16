@@ -1,7 +1,12 @@
 export const getSignedUrl = async (endpoint, devFallback) => {
     if (import.meta.env.MODE === "development") {
+        if (devFallback) {
+            return devFallback
+        }
+        else {
+            return endpoint
+        }
         // console.log(`Development mode detected. Using fallback: ${devFallback}`);
-        return devFallback;
     }
 
     try {

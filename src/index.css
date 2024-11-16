@@ -28,6 +28,8 @@
     --primary-25: rgba(46, 204, 113, 0.25);
 
     --dark-overlay: rgba(25, 25, 25, 0.8);
+
+    background-color: var(--bg-default);
 }
 
 * {

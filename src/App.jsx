@@ -1,5 +1,6 @@
 import React, { useEffect, useState, useMemo, useRef } from 'react';
 import { usePosterCountsFactory } from './hooks/usePosterCountsFactory';
+import { getSignedUrl } from "./utils/getSignedUrl";
 import VideoItem from './VideoItem';
 import VideoPlayer from './VideoPlayer';
 import Navbar from './Navbar';
@@ -65,6 +66,9 @@ const CHANNELS = {
 function App() {
     const [showLoader, setShowLoader] = useState(true);
 
+    // Navbar state
+    const [isMenuVisible, setIsMenuVisible] = useState(false);
+
     // Videos and filtering state
     const [baseVideos, setBaseVideos] = useState({});
     const [filteredVideos, setFilteredVideos] = useState([]);
@@ -100,15 +104,67 @@ function App() {
     const [page, setPage] = useState(0);
     const itemsPerPage = 100;
 
+    // State for storing signed URLs
+    const [userIconsUrl, setUserIconsUrl] = useState(null);
+    const [runtimesUrl, setRuntimesUrl] = useState(null);
+
+    // Generate signed URLs using useEffect
+    useEffect(() => {
+        const fetchSignedUrls = async () => {
+            const iconsUrl = await getSignedUrl("/discord-clip-library/userData/user_icons.json", null);
+            const runtimeUrl = await getSignedUrl("/discord-clip-library/userData/runtime_data.json", null);
+            setUserIconsUrl(iconsUrl);
+            setRuntimesUrl(runtimeUrl);
+        };
+
+        fetchSignedUrls();
+    }, []);
+
+    // Fetch user icons JSON data
+    useEffect(() => {
+        if (!userIconsUrl) return; // Wait until the signed URL is available
+
+        fetch(userIconsUrl)
+            .then((response) => response.json())
+            .then((data) => {
+                setUserIcons(data);
+                setIconsLoading(false);
+            })
+            .catch((error) => console.error("Error loading user icons:", error));
+    }, [userIconsUrl]);
+
+    // Fetch runtimes JSON data
+    useEffect(() => {
+        if (!runtimesUrl) return; // Wait until the signed URL is available
+
+        fetch(runtimesUrl)
+            .then((response) => response.json())
+            .then((data) => {
+                setRuntimes(data);
+                setRuntimesLoading(false);
+            })
+            .catch((error) => console.error("Error loading runtimes:", error));
+    }, [runtimesUrl]);
+
+    // SIGNED URL Loaders for files
     // Load all JSON data once and store it in `baseVideos`
     useEffect(() => {
-        const fetchData = async () => {
+        const fetchAllFilteredMessages = async () => {
             const videoData = {};
+
             await Promise.all(
                 Object.entries(CHANNELS).map(async ([channelId, { filepath }]) => {
-                    const url = `${import.meta.env.BASE_URL}${filepath}`;
+                    const signedUrl = await getSignedUrl(`/discord-clip-library/messages/${filepath}`, null);
+                    if (!signedUrl) {
+                        console.error(`Failed to get signed URL for ${filepath}`);
+                        return;
+                    }
+
                     try {
-                        const response = await fetch(url);
+                        const response = await fetch(signedUrl);
+                        if (!response.ok) {
+                            throw new Error(`Failed to fetch ${filepath}: ${response.statusText}`);
+                        }
                         const data = await response.json();
                         videoData[channelId] = data;
                     } catch (error) {
@@ -116,12 +172,14 @@ function App() {
                     }
                 })
             );
+
             setBaseVideos(videoData);
             setVideosLoading(false);
         };
 
-        fetchData();
-    }, []);
+        fetchAllFilteredMessages();
+    }, [urlCache]);
+
 
     // Filter videos by `channelId` and `selectedUser`, and sort by `Date`
     useEffect(() => {
@@ -163,28 +221,6 @@ function App() {
         applyFilters();
         setPage(0)
     }, [baseVideos, selectedChannel, selectedUser]);
-
-    // Fetch user icons json data
-    useEffect(() => {
-        fetch(`${import.meta.env.BASE_URL}user_icons.json`)
-            .then((response) => response.json())
-            .then((data) => {
-                setUserIcons(data)
-                setIconsLoading(false);
-            })
-            .catch((error) => console.error("Error loading user icons:", error));
-    }, []);
-
-    // Fetch runtimes json data
-    useEffect(() => {
-        fetch(`${import.meta.env.BASE_URL}runtime_data.json`)
-            .then((response) => response.json())
-            .then((data) => {
-                setRuntimes(data)
-                setRuntimesLoading(false);
-            })
-            .catch((error) => console.error("Error loading runtimes:", error));
-    }, []);
 
     // Set clipId to activeVideo
     useEffect(() => {
@@ -239,6 +275,7 @@ function App() {
 
             if (targetVideo) {
                 setActiveVideo(targetVideo);
+                setClipId(null)
             }
         }
     }, [clipId, selectedChannel, filteredVideos]);
@@ -348,8 +385,9 @@ function App() {
             {!showLoader &&
                 <div className="App">
                     <Navbar
+                        isMenuVisible={isMenuVisible} setIsMenuVisible={setIsMenuVisible} userIcons={userIcons}
                         CHANNELS={CHANNELS} selectedChannel={selectedChannel} setSelectedChannel={setSelectedChannel}
-                        userIcons={userIcons} selectedUser={selectedUser} setSelectedUser={setSelectedUser} getPosterCounts={getPosterCounts}
+                        selectedUser={selectedUser} setSelectedUser={setSelectedUser} getPosterCounts={getPosterCounts}
                     />
 
                     <div ref={videoGridRef} className="video-grid">

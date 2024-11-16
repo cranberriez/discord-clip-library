@@ -24,6 +24,7 @@
 .video-player-cont {
     grid-area: player;
     justify-self: center;
+    position: relative;
 
     display: flex;
     justify-content: center;
@@ -152,12 +153,14 @@ video:focus {
     }
 }
 
-@media (max-width: 1000px) {
+@media (max-width: 1023px) {
     .video-player-overlay {
+        width: 100%;
+
         flex-direction: column;
         gap: 6px;
 
-        grid-template-columns: auto;
+        grid-template-columns: 1fr;
         grid-template-rows: min-content min-content min-content;
         grid-template-areas:
             "player"
@@ -165,8 +168,12 @@ video:focus {
             "details";
     }
 
+    .video-player-cont {
+        width: 100%;
+    }
+
     .video-controls {
-        flex-direction: row;
+        flex-direction: row-reverse;
         height: auto;
         width: 100%;
     }
@@ -178,20 +185,38 @@ video:focus {
 
     .vcb-bot-div {
         margin: 0 !important;
-        margin-left: auto !important;
+        margin-right: auto !important;
     }
 
     .vcb-top-div {
         margin: 0 !important;
-        margin-right: auto !important;
+        margin-left: auto !important;
     }
 }
 
 @media (max-width: 600px) {
     .video-controls {
-        flex-direction: row;
         height: auto;
         width: 100%;
         flex-wrap: wrap;
     }
+}
+
+.expired-overlay {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    z-index: 999;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.expired-overlay p {
+    padding: 1rem 2rem;
+    background-color: var(--error);
+
+    font-size: 2rem;
+    color: var(--bg-default);
 }
