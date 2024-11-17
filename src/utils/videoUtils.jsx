@@ -1,6 +1,6 @@
-function isExpired(expiredDate) {
+function isExpired(expiredTimestamp) {
     const currentTime = new Date();
-    const expirationTime = new Date(expiredDate);
+    const expirationTime = expiredTimestamp * 1000; // expiredTimestamp comes in as a unix timestamp
     return expirationTime < currentTime;
 }
 
