@@ -1,6 +1,5 @@
 import React, { useEffect, useState, useMemo, useRef } from 'react';
 import { usePosterCountsFactory } from './hooks/usePosterCountsFactory';
-import { getSignedUrl } from "./utils/getSignedUrl";
 import VideoItem from './VideoItem';
 import VideoPlayer from './VideoPlayer';
 import Navbar from './Navbar';
@@ -82,7 +81,7 @@ function App() {
     // Loading states
     const [videosLoading, setVideosLoading] = useState(true);
     const [iconsLoading, setIconsLoading] = useState(true);
-    const [runtimesLoading, setRuntimesLoading] = useState(true);
+    const [runtimesLoading, setRuntimesLoading] = useState(false);
 
     // Current playing video / skip to video
     const [activeVideo, setActiveVideo] = useState(null);
@@ -104,123 +103,88 @@ function App() {
     const [page, setPage] = useState(0);
     const itemsPerPage = 100;
 
-    // State for storing signed URLs
-    const [userIconsUrl, setUserIconsUrl] = useState(null);
-    const [runtimesUrl, setRuntimesUrl] = useState(null);
-
-    // Generate signed URLs using useEffect
-    useEffect(() => {
-        const fetchSignedUrls = async () => {
-            const iconsUrl = await getSignedUrl("/discord-clip-library/userData/user_icons.json", null);
-            const runtimeUrl = await getSignedUrl("/discord-clip-library/userData/runtime_data.json", null);
-            setUserIconsUrl(iconsUrl);
-            setRuntimesUrl(runtimeUrl);
-        };
-
-        fetchSignedUrls();
-    }, []);
+    const isDevelopment = import.meta.env.MODE === 'development';
 
     // Fetch user icons JSON data
     useEffect(() => {
-        if (!userIconsUrl) return; // Wait until the signed URL is available
+        const fetchUserData = async () => {
+            try {
+                const url = isDevelopment
+                    ? '/discord-clip-library/userdata.json' // Append `.json` in dev
+                    : '/discord-clip-library/userdata'; // Use direct API call in production
 
-        fetch(userIconsUrl)
-            .then((response) => response.json())
-            .then((data) => {
+                const response = await fetch(url);
+                if (!response.ok) {
+                    throw new Error(`Failed to fetch user data: ${response.statusText}`);
+                }
+
+                const data = await response.json();
                 setUserIcons(data);
+            } catch (error) {
+                console.error("Error fetching user data:", error);
+                setIconsLoading(false); // Stop loading even if it fails
+            } finally {
                 setIconsLoading(false);
-            })
-            .catch((error) => console.error("Error loading user icons:", error));
-    }, [userIconsUrl]);
-
-    // Fetch runtimes JSON data
-    useEffect(() => {
-        if (!runtimesUrl) return; // Wait until the signed URL is available
-
-        fetch(runtimesUrl)
-            .then((response) => response.json())
-            .then((data) => {
-                setRuntimes(data);
-                setRuntimesLoading(false);
-            })
-            .catch((error) => console.error("Error loading runtimes:", error));
-    }, [runtimesUrl]);
-
-    // SIGNED URL Loaders for files
-    // Load all JSON data once and store it in `baseVideos`
-    useEffect(() => {
-        const fetchAllFilteredMessages = async () => {
-            const videoData = {};
-
-            await Promise.all(
-                Object.entries(CHANNELS).map(async ([channelId, { filepath }]) => {
-                    const signedUrl = await getSignedUrl(`/discord-clip-library/messages/${filepath}`, null);
-                    if (!signedUrl) {
-                        console.error(`Failed to get signed URL for ${filepath}`);
-                        return;
-                    }
-
-                    try {
-                        const response = await fetch(signedUrl);
-                        if (!response.ok) {
-                            throw new Error(`Failed to fetch ${filepath}: ${response.statusText}`);
-                        }
-                        const data = await response.json();
-                        videoData[channelId] = data;
-                    } catch (error) {
-                        console.error(`Error loading videos for ${channelId}:`, error);
-                    }
-                })
-            );
-
-            setBaseVideos(videoData);
-            setVideosLoading(false);
+            }
         };
 
-        fetchAllFilteredMessages();
-    }, [urlCache]);
+        fetchUserData();
+    }, []);
 
+    useEffect(() => {
+        const fetchAllMessages = async () => {
+            try {
+                const url = isDevelopment
+                    ? '/discord-clip-library/messages.json' // Append `.json` in dev
+                    : '/discord-clip-library/messages'; // Use direct API call in production
 
-    // Filter videos by `channelId` and `selectedUser`, and sort by `Date`
+                const response = await fetch(url);
+                if (!response.ok) {
+                    throw new Error(`Failed to fetch messages: ${response.statusText}`);
+                }
+
+                const data = await response.json();
+                console.log(data)
+                setBaseVideos(data);
+            } catch (error) {
+                console.error("Error fetching messages:", error);
+                setVideosLoading(false); // Stop loading even if it fails
+            } finally {
+                setVideosLoading(false);
+            }
+        };
+
+        fetchAllMessages();
+    }, []);
+
+    // Filter basevideos using selected channel and selected user
     useEffect(() => {
         if (!baseVideos) return;
 
         const applyFilters = () => {
-            let channelVideos = [];
+            // Get all videos from baseVideos as an array
+            const allVideos = Object.values(baseVideos);
 
-            if (selectedChannel === "all") {
-                // Combine videos from all channels
-                channelVideos = Object.values(baseVideos).flatMap((videos) => Object.values(videos));
-            } else if (baseVideos[selectedChannel]) {
-                // Get videos from the selected channel
-                channelVideos = Object.values(baseVideos[selectedChannel]);
-            }
+            // Filter by selected channel if not "all"
+            const channelFiltered = selectedChannel === "all"
+                ? allVideos
+                : allVideos.filter((video) => video.channelId === selectedChannel);
 
-            // Filter videos by user
-            const userFiltered = channelVideos.filter((video) =>
-                video.Poster === selectedUser || selectedUser === null
-            );
+            // Further filter by selected user if specified
+            const userFiltered = selectedUser
+                ? channelFiltered.filter((video) => video.Poster === selectedUser)
+                : channelFiltered;
 
-            // Sorting toggle (true for ascending, false for descending)
-            const newestFirst = true; // Replace with your state or variable
+            // Sort videos by `Date` (newest first by default)
+            const sortedVideos = userFiltered.sort((a, b) => b.Date - a.Date);
 
-            // Sort the filtered videos by `Date` in the specified order
-            const sortedVideos = userFiltered.sort((a, b) => {
-                const timestampA = new Date(a.Date);
-                const timestampB = new Date(b.Date);
-
-                // Flip sorting based on `isAscending`
-                return newestFirst
-                    ? timestampB - timestampA // Descending
-                    : timestampA - timestampB; // Ascending
-            });
-
+            // Update filtered videos and reset the page
             setFilteredVideos(sortedVideos);
+            setPage(0);
         };
 
         applyFilters();
-        setPage(0)
-    }, [baseVideos, selectedChannel, selectedUser]);
+    }, [baseVideos, selectedChannel, selectedUser, setFilteredVideos, setPage]);
 
     // Set clipId to activeVideo
     useEffect(() => {
@@ -238,16 +202,17 @@ function App() {
         const appRoot = document.getElementById('root');
 
         if (activeVideo) {
-            // Save current scroll position
+            // Save current scroll position and lock scroll
             scrollPosition.current = document.documentElement.scrollTop || document.body.scrollTop;
             appRoot.classList.add('no-scroll');
         } else if (!activeVideo && scrollPosition.current) {
-            // Restore scroll position when closing VideoPlayer
+            // Restore scroll position only when closing the player
             window.scrollTo(0, scrollPosition.current);
             appRoot.classList.remove('no-scroll');
         }
+
         return () => {
-            appRoot.classList.remove('no-scroll'); // Clean up when `clipId` is unset
+            appRoot.classList.remove('no-scroll'); // Ensure cleanup when `clipId` is unset
         };
     }, [activeVideo]);
 
@@ -341,9 +306,12 @@ function App() {
         setPaginatedVideos(newVideos);
     }, [filteredVideos, page]);
 
-    // Handle infinite scroll with dynamic buffer
+    // Infinite scroll with dynamic buffer and active video check
     useEffect(() => {
         const handleScroll = debounce(() => {
+            // Exit early if a video is currently active
+            if (activeVideo) return;
+
             const { scrollTop, scrollHeight, clientHeight } = document.documentElement;
 
             // Calculate dynamic buffer based on scroll speed
@@ -372,7 +340,8 @@ function App() {
         return () => {
             window.removeEventListener('scroll', handleScroll);
         };
-    }, [filteredVideos, paginatedVideos]); // Add necessary dependencies
+    }, [filteredVideos, paginatedVideos, activeVideo]); // Add `activeVideo` as a dependency
+
 
     return (
         <>

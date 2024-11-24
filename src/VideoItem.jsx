@@ -15,8 +15,8 @@ function VideoItem({ video, userIcons, clipId, runtimes, onClick, urlCache }) {
     const posterPath = useSignedUrl(`${video.Id}.png`, "thumb", urlCache);
     const expired = isExpired(video.Expire_Timestamp)
     const channelId = video.channelId
-    const runtime = runtimes[channelId][vidId]
-    const authorIcon = userIcons?.[channelId]?.[video.Poster] || null;
+    const runtime = 0 //runtimes[channelId][vidId]
+    const authorIcon = userIcons?.[video.Poster]?.["Url"] || "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQWZbAhzVPm8sF_FoGJPNhfFgMGvFUtzMD0Dw&s";
     const vidLength = formatTime(runtime)
 
     useEffect(() => {

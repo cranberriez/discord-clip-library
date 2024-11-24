@@ -1,36 +1,27 @@
-import { useCallback, useRef } from 'react';
+import { useCallback, useRef, useEffect } from 'react';
 
 export const usePosterCountsFactory = (baseVideos) => {
     const cacheRef = useRef({}); // Cache to store computed results
 
+    useEffect(() => {
+        // Clear cache when baseVideos changes to ensure fresh calculations
+        cacheRef.current = {};
+    }, [baseVideos]);
+
     const calculatePosterCounts = useCallback(
         (selectedChannel) => {
-            if (!baseVideos || !selectedChannel) return {};
+            if (!baseVideos) return {};
 
-            // Check the cache for the selected channel
-            if (cacheRef.current[selectedChannel]) {
-                return cacheRef.current[selectedChannel];
-            }
-
-            let combinedVideos = [];
-            if (selectedChannel === "all") {
-                // Combine all videos from all channels (convert objects of objects into arrays)
-                combinedVideos = Object.values(baseVideos)
-                    .map(channel => Object.values(channel)) // Convert channel objects into arrays
-                    .flat();
-            } else {
-                combinedVideos = Object.values(baseVideos[selectedChannel] || {});
-            }
-
-            // Ensure combinedVideos is an array before reducing
-            if (!Array.isArray(combinedVideos)) {
-                console.error('Expected combinedVideos to be an array, got:', combinedVideos);
-                return {};
-            }
+            // Collect all videos if selectedChannel is "all" or filter by channel
+            const combinedVideos =
+                selectedChannel === "all"
+                    ? Object.values(baseVideos)
+                    : Object.values(baseVideos).filter(video => video.channelId === selectedChannel);
 
             // Calculate poster counts
             const counts = combinedVideos.reduce((acc, item) => {
-                acc[item.Poster] = (acc[item.Poster] || 0) + 1;
+                const poster = item.Poster || "Unknown";
+                acc[poster] = (acc[poster] || 0) + 1;
                 return acc;
             }, {});
 

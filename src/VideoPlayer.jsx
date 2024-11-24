@@ -22,7 +22,7 @@ function VideoPlayer({ video, onClose, onNext, onPrevious, userIcons, urlCache }
     if (!video) return null;
     const channelId = String(video.channelId);
 
-    const authorIcon = userIcons?.[channelId]?.[video.Poster] || null;
+    const authorIcon = userIcons?.[video.Poster]?.["Url"] || "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQWZbAhzVPm8sF_FoGJPNhfFgMGvFUtzMD0Dw&s";
     const title = formatTitle(video.Filename);
     const vidId = video.Id
     const expired = isExpired(video.Expire_Timestamp)
@@ -159,7 +159,6 @@ function VideoPlayer({ video, onClose, onNext, onPrevious, userIcons, urlCache }
                     {authorIcon && <img
                         src={authorIcon}
                         alt={`${video.Poster}'s icon`}
-                        onError={(e) => { e.target.src = "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQWZbAhzVPm8sF_FoGJPNhfFgMGvFUtzMD0Dw&s"; }}
                     />}
                 </div>
 

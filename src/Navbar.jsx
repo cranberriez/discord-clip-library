@@ -8,30 +8,30 @@ function Navbar({ isMenuVisible, setIsMenuVisible, CHANNELS, selectedChannel, se
     const [divWidth, setDivWidth] = useState(0);
     const authorPrevRef = useRef(null);
 
-    const selectedChannelName = formatChannelName(CHANNELS[selectedChannel]?.name ?? selectedChannel)
+    const selectedChannelName = formatChannelName(CHANNELS[selectedChannel]?.name ?? selectedChannel);
     const posterCounts = getPosterCounts(selectedChannel);
     const totalClipCount = Object.values(posterCounts).reduce((sum, count) => sum + count, 0);
 
     useEffect(() => {
-        if (!(selectedUser in posterCounts)) setSelectedUser(null)
-    }, [posterCounts, selectedUser, selectedChannel])
+        if (!(selectedUser in posterCounts)) setSelectedUser(null);
+    }, [posterCounts, selectedUser, selectedChannel]);
 
     const handleChannelSelect = (channel) => {
-        setSelectedChannel(channel)
-    }
+        setSelectedChannel(channel);
+    };
 
     // Touch screen detection
     useEffect(() => {
         const checkTouchDevice = () => {
             setIsTouchDevice(
-                "ontouchstart" in window || navigator.maxTouchPoints > 0
+                'ontouchstart' in window || navigator.maxTouchPoints > 0
             );
-            window.addEventListener("resize", checkTouchDevice);
         };
 
         checkTouchDevice();
+        window.addEventListener('resize', checkTouchDevice);
         return () => {
-            window.removeEventListener("resize", checkTouchDevice);
+            window.removeEventListener('resize', checkTouchDevice);
         };
     }, []);
 
@@ -44,176 +44,157 @@ function Navbar({ isMenuVisible, setIsMenuVisible, CHANNELS, selectedChannel, se
         };
 
         updateWidth();
-        window.addEventListener("resize", updateWidth);
+        window.addEventListener('resize', updateWidth);
 
         return () => {
-            window.removeEventListener("resize", updateWidth);
+            window.removeEventListener('resize', updateWidth);
         };
     }, []);
 
-    const flattenUserData = (data) => {
-        return Object.values(data).reduce((acc, channel) => {
-            for (const [user, url] of Object.entries(channel)) {
-                acc[user] = url;
-            }
-            return acc;
-        }, {});
-    };
-
     const handleUserSelect = (user) => {
-        if (selectedUser === user) {
-            setSelectedUser(null);
-        } else {
-            setSelectedUser(user);
-        }
+        setSelectedUser(selectedUser === user ? null : user);
     };
 
-    const getChannelCount = () => {
-        return Object.keys(CHANNELS).length
-    }
-
-    const showMenu = () => setIsMenuVisible(true);
-    const hideMenu = () => setIsMenuVisible(false);
     const toggleMenu = () => setIsMenuVisible((prev) => !prev);
 
     return (
-        <div className={`app-navbar ${isMenuVisible ? 'nav-open' : ''}`}
+        <div
+            className={`app-navbar ${isMenuVisible ? 'nav-open' : ''}`}
             style={{
-                "--author-count": Object.keys(userIcons).length,
-                "--channel-count": Object.keys(CHANNELS).length
+                '--author-count': Object.keys(userIcons).length,
+                '--channel-count': Object.keys(CHANNELS).length,
             }}
         >
-            <div className='navbar-inner-cont'>
-                <div className='nav-prev-cont'
-                    {...(!isTouchDevice ? {
-                        onMouseEnter: showMenu,
-                        onMouseLeave: hideMenu,
-                    } : {
-                        onClick: showMenu
-                    })}
+            <div className="navbar-inner-cont">
+                <div
+                    className="nav-prev-cont"
+                    {...(!isTouchDevice
+                        ? {
+                            onMouseEnter: () => setIsMenuVisible(true),
+                            onMouseLeave: () => setIsMenuVisible(false),
+                        }
+                        : { onClick: toggleMenu })}
                 >
-                    <div className='nav-channel-prev'>
-                        <p className='active-channel-prev'>{selectedChannelName}</p>
+                    <div className="nav-channel-prev">
+                        <p className="active-channel-prev">{selectedChannelName}</p>
                     </div>
 
-                    <div className='nav-author-prev' ref={authorPrevRef}>
-                        <AuthorPreviewIcons flatUserIcons={flattenUserData(userIcons)} selectedUser={selectedUser} divWidth={divWidth} />
+                    <div className="nav-author-prev" ref={authorPrevRef}>
+                        <AuthorPreviewIcons userIcons={userIcons} selectedUser={selectedUser} divWidth={divWidth} />
                     </div>
 
-                    <div className='nav-total-prev'>
-                        <p>{(selectedUser ? posterCounts[selectedUser] : totalClipCount) || 0} {((selectedUser ? posterCounts[selectedUser] : totalClipCount) || 0) == 1 ? "Clip" : "Clips"}</p>
+                    <div className="nav-total-prev">
+                        <p>
+                            {(selectedUser ? posterCounts[selectedUser] : totalClipCount) || 0}{' '}
+                            {((selectedUser ? posterCounts[selectedUser] : totalClipCount) || 0) === 1 ? 'Clip' : 'Clips'}
+                        </p>
                     </div>
 
-                    <button className={`close-navbar ${isTouchDevice ? "" : "hide-close-button"}`} onClick={(e) => {
-                        e.stopPropagation(); // Prevent bubbling to the parent
-                        toggleMenu();
-                    }}>
+                    <button
+                        className={`close-navbar ${isTouchDevice ? '' : 'hide-close-button'}`}
+                        onClick={(e) => {
+                            e.stopPropagation();
+                            toggleMenu();
+                        }}
+                    >
                         <OpenCloseButton open={isMenuVisible} />
                     </button>
                 </div>
-                {isMenuVisible && <div className='nav-filters-cont'
-                    // Conditional props
-                    {...(!isTouchDevice && {
-                        onMouseEnter: showMenu,
-                        onMouseLeave: hideMenu,
-                    })}
-                >
-                    <div className='nav-filters-channels'>
-                        <p className='filter-label'>Channel</p>
-                        <div className='filter-channels-cont'>
-                            <button
-                                key={"all-channel-selector123"}
-                                className={`filter-channel ${"all" === selectedChannel ? 'active' : ''}`}
-                                onClick={() => { handleChannelSelect("all") }}
-                            >
-                                {formatChannelName("all")}
-                            </button>
-                            {Object.entries(CHANNELS).map(([channelId, { name }]) => (
+
+                {isMenuVisible && (
+                    <div
+                        className="nav-filters-cont"
+                        {...(!isTouchDevice && {
+                            onMouseEnter: () => setIsMenuVisible(true),
+                            onMouseLeave: () => setIsMenuVisible(false),
+                        })}
+                    >
+                        <div className="nav-filters-channels">
+                            <p className="filter-label">Channel</p>
+                            <div className="filter-channels-cont">
                                 <button
-                                    key={channelId}
-                                    className={`filter-channel ${channelId === selectedChannel ? 'active' : ''}`}
-                                    onClick={() => { handleChannelSelect(channelId) }}
+                                    key="all-channel-selector123"
+                                    className={`filter-channel ${'all' === selectedChannel ? 'active' : ''}`}
+                                    onClick={() => handleChannelSelect('all')}
                                 >
-                                    {formatChannelName(name)}
+                                    {formatChannelName('all')}
                                 </button>
-                            ))}
+                                {Object.entries(CHANNELS).map(([channelId, { name }]) => (
+                                    <button
+                                        key={channelId}
+                                        className={`filter-channel ${channelId === selectedChannel ? 'active' : ''}`}
+                                        onClick={() => handleChannelSelect(channelId)}
+                                    >
+                                        {formatChannelName(name)}
+                                    </button>
+                                ))}
+                            </div>
+                        </div>
+
+                        <div className="nav-filters-authors">
+                            <p className="filter-label">Poster</p>
+                            <div className="filter-author-cont">
+                                {Object.entries(userIcons).map(([name, { Url }]) => (
+                                    <button
+                                        key={name}
+                                        className={`filter-author ${name === selectedUser ? 'active' : ''}`}
+                                        onClick={() => handleUserSelect(name)}
+                                        disabled={!posterCounts[name]}
+                                    >
+                                        <div className="author-icon">
+                                            {Url && <img src={Url} alt={`${name}'s icon`} />}
+                                        </div>
+                                        <div className="filter-author-text">
+                                            <p className="filter-author-name">{formatUsername(name)}</p>
+                                            <p className="filter-author-clips">
+                                                {posterCounts[name] || 0}{' '}
+                                                {(posterCounts[name] || 0) === 1 ? 'Clip' : 'Clips'}
+                                            </p>
+                                        </div>
+                                    </button>
+                                ))}
+                            </div>
                         </div>
                     </div>
-                    <div className='nav-filters-authors'>
-                        <p className='filter-label'>Poster</p>
-                        <div className='filter-author-cont'>
-                            {Object.entries(flattenUserData(userIcons)).map(([name, src]) => (
-                                <button
-                                    key={name}
-                                    className={`filter-author ${name === selectedUser ? 'active' : ''}`}
-                                    onClick={() => { handleUserSelect(name) }}
-                                    disabled={!posterCounts[name]}
-                                >
-                                    <div className="author-icon">
-                                        {src && <img
-                                            src={src}
-                                            alt={`${name}'s icon`}
-                                        />}
-                                    </div>
-                                    <div className='filter-author-text'>
-                                        <p className='filter-author-name'>{formatUsername(name)}</p>
-                                        <p className='filter-author-clips'>{posterCounts[name] || 0} {(posterCounts[name] || 0) == 1 ? "Clip" : "Clips"}</p>
-                                    </div>
-                                </button>
-                            ))}
-                        </div>
-                    </div>
-                </div>}
+                )}
             </div>
         </div>
-    )
+    );
 }
 
-function AuthorPreviewIcons({ flatUserIcons, selectedUser, divWidth }) {
-    const [iconCount, setIconCount] = useState(1)
+function AuthorPreviewIcons({ userIcons, selectedUser, divWidth }) {
+    const [iconCount, setIconCount] = useState(1);
     const iconWidth = 34;
 
     useEffect(() => {
-        if (divWidth > iconWidth * flatUserIcons.length) {
-            setIconCount(undefined)
+        if (divWidth > iconWidth * Object.keys(userIcons).length) {
+            setIconCount(undefined);
+        } else {
+            setIconCount(Math.floor(divWidth / iconWidth));
         }
-        else {
-            setIconCount(Math.round(divWidth / iconWidth))
-        }
-    }, [divWidth])
+    }, [divWidth]);
 
-    // Render Single Author
     if (selectedUser !== null) {
-        const src = flatUserIcons[selectedUser]
+        const { Url } = userIcons[selectedUser] || {};
         return (
-            <div className='prev-single-author'>
-                <div className="author-icon single" key={"prev-" + selectedUser}>
-                    {src && (
-                        <img
-                            src={src}
-                            alt={`${selectedUser}'s icon`}
-                        />
-                    )}
+            <div className="prev-single-author">
+                <div className="author-icon single" key={`prev-${selectedUser}`}>
+                    {Url && <img src={Url} alt={`${selectedUser}'s icon`} />}
                 </div>
-                <p>
-                    {formatUsername(selectedUser)}
-                </p>
+                <p>{formatUsername(selectedUser)}</p>
             </div>
         );
     }
 
     return (
         <>
-            {flatUserIcons && Object.entries(flatUserIcons).slice(0, iconCount).map(([name, src]) => (
-                <div className="author-icon" key={"prev-" + name}>
-                    {src && (
-                        <img
-                            src={src}
-                            alt={`${name}'s icon`}
-                        />
-                    )}
-                </div>
-            ))}
+            {Object.entries(userIcons)
+                .slice(0, iconCount)
+                .map(([name, { Url }]) => (
+                    <div className="author-icon" key={`prev-${name}`}>
+                        {Url && <img src={Url} alt={`${name}'s icon`} />}
+                    </div>
+                ))}
         </>
     );
 }
@@ -221,13 +202,9 @@ function AuthorPreviewIcons({ flatUserIcons, selectedUser, divWidth }) {
 function OpenCloseButton({ open }) {
     return (
         <div className={`open-close-svgs ${open ? 'open' : ''}`}>
-            {open ?
-                <XMarkIcon size={40} />
-                : <ChevronDownIcon className='oc-svg first-chev' size={40} />
-            }
+            {open ? <XMarkIcon size={40} /> : <ChevronDownIcon className="oc-svg first-chev" size={40} />}
         </div>
-    )
+    );
 }
-
 
 export default Navbar;
