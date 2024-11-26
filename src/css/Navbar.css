@@ -25,7 +25,7 @@
 }
 
 .nav-prev-cont {
-    background-color: var(--bg-dark);
+    background-color: var(--bg-default);
     border: 2px solid var(--border-dark);
     border-top: 0;
     padding: 1rem;
@@ -129,7 +129,7 @@
 
 
 .nav-filters-channels {
-    background-color: var(--bg-dark);
+    background-color: var(--bg-default);
     border: 2px solid var(--border-dark);
 
     border-right: 0;
@@ -178,7 +178,7 @@
 }
 
 .nav-filters-authors {
-    background-color: var(--bg-dark);
+    background-color: var(--bg-default);
     border: 2px solid var(--border-dark);
 
     width: 70%;
@@ -232,6 +232,7 @@
 
 .filter-author-name {
     font-size: 1.2em;
+    color: var(--text-light);
 }
 
 .filter-author-clips {

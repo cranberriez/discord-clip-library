@@ -10,26 +10,28 @@
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
 
-    --text-light: #FEFEFE;
-    --text-gray: #C2C2C2;
-    --text-dark: #aaa;
+    --text-light: #DADADA;
+    --text-gray: #A6A6A6;
+    --text-dark: #848484;
 
-    --bg-light: #333;
-    --bg-default: #212121;
-    --bg-dark: #1f1f1f;
+    --bg-light: #3C3938;
+    --bg-default: #1A1919;
+    --bg-dark: #141414;
 
-    --border-dark: #1c1c1c;
+    --border-dark: #101010;
 
-    --author-default: #9b59b6;
-    --error: #e74c3c;
-    --primary: #5bda66;
-    --primary-light: #bad6bd;
-    --primary-dark: #1b2921;
-    --primary-25: rgba(46, 204, 113, 0.25);
+    --author-default: #9F93B8;
+    --success: #2ECC71;
+    --error: #C55349;
 
-    --dark-overlay: rgba(25, 25, 25, 0.8);
+    --primary: #e04b2a;
+    --primary-light: #EC8A74;
+    --primary-dark: #2D0F08;
+    --primary-25: rgba(195, 59, 30, 0.25);
 
-    background-color: var(--bg-default);
+    --dark-overlay: rgba(26, 25, 25, 0.85);
+
+    background-color: var(--bg-dark);
 }
 
 * {
