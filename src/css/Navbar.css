@@ -5,8 +5,8 @@
     justify-content: flex-start;
 
     width: 100%;
-    /* background-color: var(--bg-default); */
-    position: fixed;
+    position: absolute;
+    top: 0;
 
     z-index: 2;
 
@@ -20,7 +20,6 @@
 .navbar-inner-cont {
     max-width: 1100px;
     width: 80%;
-    /* min-width: fit-content; */
     pointer-events: auto;
 }
 
@@ -28,13 +27,13 @@
     background-color: var(--bg-default);
     border: 2px solid var(--border-dark);
     border-top: 0;
-    padding: 1rem;
+    padding: 1rem .8rem;
     gap: 1rem;
 
     border-radius: 0 0 5px 5px;
 
     display: grid;
-    grid-template-columns: 1fr 2fr 1fr auto;
+    grid-template-columns: 1fr 2fr 1fr;
 
     align-items: center;
 }
@@ -64,7 +63,6 @@
 }
 
 .nav-author-prev .author-icon {
-    /* NOTE IF UPDATING SIZE, MODIFY THE AUTHOR ICONS PREVIEW WIDTH */
     margin-left: -1.2rem;
     box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.2);
     border: 1px solid var(--bg-dark);
@@ -84,7 +82,6 @@
     display: flex;
     align-items: center;
     justify-content: center;
-
 }
 
 .nav-total-prev p {
@@ -117,37 +114,37 @@
     background-color: var(--primary);
 }
 
-
 /* FILTER STYLES */
 
 .nav-filters-cont {
     display: flex;
+    flex-direction: column;
     padding-top: 1rem;
 
+    pointer-events: auto;
     overflow-y: auto;
+    max-height: calc(100vh - 78px);
 }
 
-
 .nav-filters-channels {
+    display: flex;
+    width: 100%;
     background-color: var(--bg-default);
     border: 2px solid var(--border-dark);
 
-    border-right: 0;
+    border-radius: 5px;
+    border: 0;
     padding: 1rem;
 
-    display: flex;
     flex-direction: column;
-
-    width: 30%;
-    height: auto;
-
-    border-radius: 5px 0 0 5px;
 }
 
 .filter-label {
+    width: 100%;
     color: var(--text-dark);
     padding-left: 1.5rem;
-    margin-bottom: 1rem;
+    margin-bottom: .4rem;
+    grid-area: header;
 }
 
 .filter-channel {
@@ -170,30 +167,37 @@
 }
 
 .filter-channel:hover {
-    color: var(--text-light)
+    color: var(--text-light);
 }
 
 .filter-channel.active {
     color: var(--primary);
 }
 
+.filter-channels-cont {
+    grid-area: channels;
+
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    grid-template-areas:
+        "header"
+        "channels";
+}
+
 .nav-filters-authors {
+    width: 100%;
+    border-radius: 5px;
+    border: 0;
     background-color: var(--bg-default);
-    border: 2px solid var(--border-dark);
 
-    width: 70%;
-    height: auto;
-
-    border-left: 0;
+    margin-top: 1rem;
     padding: 1rem;
-
-    border-radius: 0 5px 5px 0;
 }
 
 .filter-author-cont {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
-    gap: 1rem;
+    gap: 2rem;
 }
 
 .filter-author {
@@ -230,12 +234,19 @@
     width: 3rem;
 }
 
+.filter-author-text {
+    display: flex;
+    flex-direction: column;
+    gap: .2em;
+}
+
 .filter-author-name {
     font-size: 1.2em;
     color: var(--text-light);
 }
 
 .filter-author-clips {
+    font-size: .8em;
     color: var(--text-gray);
 }
 
@@ -253,63 +264,6 @@
 
     .close-navbar {
         display: block;
-    }
-
-    .nav-prev-cont {
-        grid-template-columns: 1fr 2fr auto auto;
-        padding: 1rem .8rem;
-    }
-
-
-    .nav-filters-cont {
-        flex-direction: column;
-        pointer-events: auto;
-        overflow-y: auto;
-        max-height: calc(100vh - 78px);
-    }
-
-    .nav-filters-channels {
-        display: flex;
-        width: 100%;
-
-        border-radius: 5px;
-        border: 0;
-    }
-
-    .filter-label {
-        width: 100%;
-        margin-bottom: .4rem;
-        grid-area: header;
-    }
-
-    .filter-channels-cont {
-        grid-area: channels;
-
-        display: grid;
-        grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-        grid-template-areas:
-            "header"
-            "channels";
-    }
-
-    .nav-filters-authors {
-        width: 100%;
-        border-radius: 5px;
-        border: 0;
-    }
-
-    .filter-author-cont {
-        gap: 2rem;
-    }
-
-    .filter-author-text {
-        display: flex;
-        flex-direction: column;
-        gap: .2em;
-    }
-
-    .filter-author-clips {
-        font-size: .8em;
     }
 }
 
