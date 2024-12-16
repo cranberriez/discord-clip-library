@@ -7,6 +7,16 @@ import { SettingsMenuIcon, SearchIcon, NoEyeIcon } from '@vidstack/react/icons';
 
 import './css/Navbar.css';
 
+const NavbarContext = createContext();
+
+const NavbarProvider = ({ children, value }) => (
+    <NavbarContext.Provider value={value}>
+        {children}
+    </NavbarContext.Provider>
+)
+
+const useNavbarContext = () => useContext(NavbarContext);
+
 function Navbar({ CHANNELS, selectedChannel, setSelectedChannel, userIcons, selectedUser, setSelectedUser, getPosterCounts }) {
     // Navbar state
     const [isUserVisible, setIsUserVisible] = useState(false);
@@ -29,6 +39,26 @@ function Navbar({ CHANNELS, selectedChannel, setSelectedChannel, userIcons, sele
         { component: <FilterSelector /> },
         { component: <Searchbar /> },
     ]
+
+    // Context Available Vars
+    const contextValue = {
+        // Created State / Consts
+        isUserVisible,
+        setIsUserVisible,
+        activeMenu,
+        setActiveMenu,
+        selectedUserName,
+        selectedChannelName,
+        posterCounts,
+        menus,
+        // Passed State
+        CHANNELS,
+        selectedChannel,
+        setSelectedChannel,
+        userIcons,
+        selectedUser,
+        setSelectedUser
+    }
 
     useEffect(() => {
         if (!(selectedUser in posterCounts)) setSelectedUser(null);
@@ -67,26 +97,29 @@ function Navbar({ CHANNELS, selectedChannel, setSelectedChannel, userIcons, sele
     }, []);
 
     return (
-        <div
-            className={`nav-container`}
-            style={{
-                '--author-count': Object.keys(userIcons).length,
-                '--channel-count': Object.keys(CHANNELS).length,
-            }}
-        >
-            <UserMenu isUserVisible={isUserVisible} setIsUserVisible={setIsUserVisible} reference={navItemLeft} />
-            <MainMenu activeMenu={activeMenu} setActiveMenu={setActiveMenu} selectedUserName={selectedUserName} selectedChannelName={selectedChannelName} />
+        <NavbarProvider value={contextValue}>
             <div
-                className='RIGHT-FILLER-ITEM'
-                style={{ width: `${leftWidth}px` }}
+                className={`nav-container`}
+                style={{
+                    '--author-count': Object.keys(userIcons).length,
+                    '--channel-count': Object.keys(CHANNELS).length,
+                }}
             >
+                <UserMenu reference={navItemLeft} />
+                <MainMenu />
+                <div
+                    className='RIGHT-FILLER-ITEM'
+                    style={{ width: `${leftWidth}px` }}
+                >
+                </div>
             </div>
-        </div>
+        </NavbarProvider>
     );
 }
 
 // USER MENU
-function UserMenu({ isUserVisible, setIsUserVisible, reference }) {
+function UserMenu() {
+    const { isUserVisible, setIsUserVisible, reference } = useNavbarContext();
 
     const handleMouseEnter = () => {
         setIsUserVisible(true)
@@ -164,7 +197,8 @@ function UMDropdownItem({ iconUrl, text }) {
 }
 
 // MAIN MENU
-function MainMenu({ activeMenu, setActiveMenu, selectedUserName, selectedChannelName }) {
+function MainMenu() {
+    const { activeMenu, setActiveMenu, selectedUserName, selectedChannelName, menus } = useNavbarContext();
 
     const handleNavSelect = (navItem) => {
         if (navItem == activeMenu) {
@@ -177,8 +211,8 @@ function MainMenu({ activeMenu, setActiveMenu, selectedUserName, selectedChannel
 
     return (
         <div className='nav-element nav-mainmenu'>
-            <ChannelMenu clickEvent={handleNavSelect} popupID={0} selectedChannelName={selectedChannelName} />
-            <AuthorMenu clickEvent={handleNavSelect} popupID={1} selectedUserName={selectedUserName} />
+            <ChannelMenu clickEvent={handleNavSelect} selectedChannelName={selectedChannelName} />
+            <AuthorMenu clickEvent={handleNavSelect} selectedUserName={selectedUserName} />
             <div className='nav-piece nav-button' onClick={() => handleNavSelect(2)} >
                 <SettingsMenuIcon size={40} />
             </div>
@@ -212,8 +246,36 @@ function AuthorMenu({ clickEvent, selectedUserName }) {
 }
 
 function ChannelSelector() {
+    const { CHANNELS } = useNavbarContext();
+    // console.log(Object.entries(CHANNELS)) // Debugging
+
     return (
-        <div className='nav-channel-selector'>
+        <div className='nav-channels-selector'>
+            <p>Channel Selector</p>
+            <div className='nav-channels-container'>
+                <ChannelItem channelID={"all"} channelInfo={{ name: "all" }} />
+                {Object.entries(CHANNELS).map((channel) => {
+                    const channelID = channel[0]
+                    const channelInfo = channel[1]
+                    return (
+                        <ChannelItem key={channelID} channelID={channelID} channelInfo={channelInfo} />
+                    )
+                })}
+            </div>
+        </div>
+    )
+}
+
+function ChannelItem({ channelID, channelInfo }) {
+    const { selectedChannel, setSelectedChannel } = useNavbarContext();
+    // console.log(selectedChannel, channelID, selectedChannel === channelID) // Debugging
+
+    return (
+        <div
+            className={`nav-channels-item ${channelID === selectedChannel ? 'active-channel' : ''}`}
+            onClick={() => setSelectedChannel(channelID)}
+        >
+            {channelInfo.name}
         </div>
     )
 }

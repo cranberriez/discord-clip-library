@@ -309,7 +309,7 @@ function App() {
     // Loader fade-out
     useEffect(() => {
         if (!videosLoading && !iconsLoading && !runtimesLoading) {
-            const timeout = setTimeout(() => setShowLoader(false), 500);
+            const timeout = setTimeout(() => setShowLoader(false), 400);
             return () => clearTimeout(timeout);
         }
     }, [videosLoading, iconsLoading, runtimesLoading]);
