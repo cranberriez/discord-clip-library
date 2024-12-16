@@ -1,24 +1,38 @@
-import React, { useEffect, useState, useRef } from 'react';
+import React, { createContext, useContext, useEffect, useState, useRef } from 'react';
 import { formatChannelName, formatUsername } from './utils/formatUtils';
-import { ChevronDownIcon, XMarkIcon } from '@vidstack/react/icons';
+
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faBars, faFilm, faHeart, faGear, faArrowRightFromBracket, faAt, faHashtag, faSliders } from '@fortawesome/free-solid-svg-icons';
+import { SettingsMenuIcon, SearchIcon, NoEyeIcon } from '@vidstack/react/icons';
+
 import './css/Navbar.css';
 
-function Navbar({ isMenuVisible, setIsMenuVisible, CHANNELS, selectedChannel, setSelectedChannel, userIcons, selectedUser, setSelectedUser, getPosterCounts }) {
+function Navbar({ CHANNELS, selectedChannel, setSelectedChannel, userIcons, selectedUser, setSelectedUser, getPosterCounts }) {
+    // Navbar state
+    const [isUserVisible, setIsUserVisible] = useState(false);
+    const [activeMenu, setActiveMenu] = useState(null);
     const [isTouchDevice, setIsTouchDevice] = useState(false);
     const [divWidth, setDivWidth] = useState(0);
-    const authorPrevRef = useRef(null);
 
+    const selectedUserName = formatUsername(selectedUser ?? "All Users")
     const selectedChannelName = formatChannelName(CHANNELS[selectedChannel]?.name ?? selectedChannel);
     const posterCounts = getPosterCounts(selectedChannel);
     const totalClipCount = Object.values(posterCounts).reduce((sum, count) => sum + count, 0);
 
+    const navItemLeft = useRef(null);
+    const [leftWidth, setLeftWidth] = useState(0);
+
+    // Navbar Constants
+    const menus = [
+        { component: <ChannelSelector /> },
+        { component: <AuthorSelector /> },
+        { component: <FilterSelector /> },
+        { component: <Searchbar /> },
+    ]
+
     useEffect(() => {
         if (!(selectedUser in posterCounts)) setSelectedUser(null);
     }, [posterCounts, selectedUser, selectedChannel]);
-
-    const handleChannelSelect = (channel) => {
-        setSelectedChannel(channel);
-    };
 
     // Touch screen detection
     useEffect(() => {
@@ -35,14 +49,15 @@ function Navbar({ isMenuVisible, setIsMenuVisible, CHANNELS, selectedChannel, se
         };
     }, []);
 
-    // Width update handle for the Author Preview Container
-    useEffect(() => {
-        const updateWidth = () => {
-            if (authorPrevRef.current) {
-                setDivWidth(authorPrevRef.current.offsetWidth);
-            }
-        };
+    // Function to update the left column's width
+    const updateWidth = () => {
+        if (navItemLeft.current) {
+            setLeftWidth(navItemLeft.current.offsetWidth);
+        }
+    };
 
+    // UseEffect to handle initial load and window resize
+    useEffect(() => {
         updateWidth();
         window.addEventListener('resize', updateWidth);
 
@@ -51,160 +66,180 @@ function Navbar({ isMenuVisible, setIsMenuVisible, CHANNELS, selectedChannel, se
         };
     }, []);
 
-    const handleUserSelect = (user) => {
-        setSelectedUser(selectedUser === user ? null : user);
-    };
-
-    const toggleMenu = () => setIsMenuVisible((prev) => !prev);
-
     return (
         <div
-            className={`app-navbar ${isMenuVisible ? 'nav-open' : ''}`}
+            className={`nav-container`}
             style={{
                 '--author-count': Object.keys(userIcons).length,
                 '--channel-count': Object.keys(CHANNELS).length,
             }}
         >
-            <div className="navbar-inner-cont">
-                <div
-                    className="nav-prev-cont"
-                    {...(!isTouchDevice
-                        ? {
-                            onMouseEnter: () => setIsMenuVisible(true),
-                            onMouseLeave: () => setIsMenuVisible(false),
-                        }
-                        : { onClick: toggleMenu })}
-                >
-                    <div className="nav-channel-prev">
-                        <p className="active-channel-prev">{selectedChannelName}</p>
-                    </div>
-
-                    <div className="nav-author-prev" ref={authorPrevRef}>
-                        <AuthorPreviewIcons userIcons={userIcons} selectedUser={selectedUser} divWidth={divWidth} />
-                    </div>
-
-                    <div className="nav-total-prev">
-                        <p>
-                            {(selectedUser ? posterCounts[selectedUser] : totalClipCount) || 0}{' '}
-                            {((selectedUser ? posterCounts[selectedUser] : totalClipCount) || 0) === 1 ? 'Clip' : 'Clips'}
-                        </p>
-                    </div>
-
-                    <button
-                        className={`close-navbar ${isTouchDevice ? '' : 'hide-close-button'}`}
-                        onClick={(e) => {
-                            e.stopPropagation();
-                            toggleMenu();
-                        }}
-                    >
-                        <OpenCloseButton open={isMenuVisible} />
-                    </button>
-                </div>
-
-                {isMenuVisible && (
-                    <div
-                        className="nav-filters-cont"
-                        {...(!isTouchDevice && {
-                            onMouseEnter: () => setIsMenuVisible(true),
-                            onMouseLeave: () => setIsMenuVisible(false),
-                        })}
-                    >
-                        <div className="nav-filters-channels">
-                            <p className="filter-label">Channel</p>
-                            <div className="filter-channels-cont">
-                                <button
-                                    key="all-channel-selector123"
-                                    className={`filter-channel ${'all' === selectedChannel ? 'active' : ''}`}
-                                    onClick={() => handleChannelSelect('all')}
-                                >
-                                    {formatChannelName('all')}
-                                </button>
-                                {Object.entries(CHANNELS).map(([channelId, { name }]) => (
-                                    <button
-                                        key={channelId}
-                                        className={`filter-channel ${channelId === selectedChannel ? 'active' : ''}`}
-                                        onClick={() => handleChannelSelect(channelId)}
-                                    >
-                                        {formatChannelName(name)}
-                                    </button>
-                                ))}
-                            </div>
-                        </div>
-
-                        <div className="nav-filters-authors">
-                            <p className="filter-label">Poster</p>
-                            <div className="filter-author-cont">
-                                {Object.entries(userIcons).map(([name, { Url }]) => (
-                                    <button
-                                        key={name}
-                                        className={`filter-author ${name === selectedUser ? 'active' : ''}`}
-                                        onClick={() => handleUserSelect(name)}
-                                        disabled={!posterCounts[name]}
-                                    >
-                                        <div className="author-icon">
-                                            {Url && <img src={Url} alt={`${name}'s icon`} />}
-                                        </div>
-                                        <div className="filter-author-text">
-                                            <p className="filter-author-name">{formatUsername(name)}</p>
-                                            <p className="filter-author-clips">
-                                                {posterCounts[name] || 0}{' '}
-                                                {(posterCounts[name] || 0) === 1 ? 'Clip' : 'Clips'}
-                                            </p>
-                                        </div>
-                                    </button>
-                                ))}
-                            </div>
-                        </div>
-                    </div>
-                )}
+            <UserMenu isUserVisible={isUserVisible} setIsUserVisible={setIsUserVisible} reference={navItemLeft} />
+            <MainMenu activeMenu={activeMenu} setActiveMenu={setActiveMenu} selectedUserName={selectedUserName} selectedChannelName={selectedChannelName} />
+            <div
+                className='RIGHT-FILLER-ITEM'
+                style={{ width: `${leftWidth}px` }}
+            >
             </div>
         </div>
     );
 }
 
-function AuthorPreviewIcons({ userIcons, selectedUser, divWidth }) {
-    const [iconCount, setIconCount] = useState(1);
-    const iconWidth = 34;
+// USER MENU
+function UserMenu({ isUserVisible, setIsUserVisible, reference }) {
 
-    useEffect(() => {
-        if (divWidth > iconWidth * Object.keys(userIcons).length) {
-            setIconCount(undefined);
-        } else {
-            setIconCount(Math.floor(divWidth / iconWidth));
-        }
-    }, [divWidth]);
+    const handleMouseEnter = () => {
+        setIsUserVisible(true)
+    }
 
-    if (selectedUser !== null) {
-        const { Url } = userIcons[selectedUser] || {};
-        return (
-            <div className="prev-single-author">
-                <div className="author-icon single" key={`prev-${selectedUser}`}>
-                    {Url && <img src={Url} alt={`${selectedUser}'s icon`} />}
-                </div>
-                <p>{formatUsername(selectedUser)}</p>
-            </div>
-        );
+    const handleMouseLeave = () => {
+        setIsUserVisible(false)
     }
 
     return (
-        <>
-            {Object.entries(userIcons)
-                .slice(0, iconCount)
-                .map(([name, { Url }]) => (
-                    <div className="author-icon" key={`prev-${name}`}>
-                        {Url && <img src={Url} alt={`${name}'s icon`} />}
-                    </div>
-                ))}
-        </>
-    );
+        <div
+            className={`nav-element nav-usermenu ${isUserVisible ? 'menu-visible' : ''}`}
+            onMouseEnter={handleMouseEnter}
+            onMouseLeave={handleMouseLeave}
+            ref={reference}
+        >
+            <MenuButton iconUrl={faBars} />
+            <UserButton />
+
+            {isUserVisible && <UserMenuDropdown />}
+        </div>
+    )
 }
 
-function OpenCloseButton({ open }) {
+function MenuButton({ iconUrl }) {
     return (
-        <div className={`open-close-svgs ${open ? 'open' : ''}`}>
-            {open ? <XMarkIcon size={40} /> : <ChevronDownIcon className="oc-svg first-chev" size={40} />}
+        <div className='nav-piece nav-button'>
+            <FontAwesomeIcon icon={iconUrl}
+                style={{
+                    stroke: 'black',
+                    strokeWidth: 1,
+                    fill: 'none', // Remove the default fill if needed
+                }}
+            />
         </div>
-    );
+    )
+}
+
+function UserButton() {
+    return (
+        <div className='nav-piece user-piece'>
+            <div className='nav-user-dtls'>
+                <p className='nav-lia'>Logged In As</p>
+                <p className='nav-liu'>__jacob__</p>
+            </div>
+            <div className='nav-user-icon-cont'>
+                <div className='nav-user-icon-dummy'>
+                    ?
+                </div>
+            </div>
+        </div>
+    )
+}
+
+function UserMenuDropdown() {
+    return (
+        <div className='num-dropdown'>
+            <ul>
+                <UMDropdownItem iconUrl={faFilm} text={"Your Videos"}> </UMDropdownItem>
+                <UMDropdownItem iconUrl={faHeart} text={"Liked Videos"} > </UMDropdownItem>
+                <UMDropdownItem iconUrl={faGear} text={"Settings"} > </UMDropdownItem>
+                <UMDropdownItem iconUrl={faArrowRightFromBracket} text={"Sign Out"} > </UMDropdownItem>
+            </ul>
+        </div>
+    )
+}
+
+function UMDropdownItem({ iconUrl, text }) {
+    return (
+        <li className='num-item'>
+            <FontAwesomeIcon icon={iconUrl} />
+            <p>{text}</p>
+        </li>
+    )
+}
+
+// MAIN MENU
+function MainMenu({ activeMenu, setActiveMenu, selectedUserName, selectedChannelName }) {
+
+    const handleNavSelect = (navItem) => {
+        if (navItem == activeMenu) {
+            setActiveMenu(null)
+        }
+        else {
+            setActiveMenu(navItem)
+        }
+    }
+
+    return (
+        <div className='nav-element nav-mainmenu'>
+            <ChannelMenu clickEvent={handleNavSelect} popupID={0} selectedChannelName={selectedChannelName} />
+            <AuthorMenu clickEvent={handleNavSelect} popupID={1} selectedUserName={selectedUserName} />
+            <div className='nav-piece nav-button' onClick={() => handleNavSelect(2)} >
+                <SettingsMenuIcon size={40} />
+            </div>
+            <div className='nav-piece nav-button' onClick={() => handleNavSelect(3)} >
+                <SearchIcon size={40} />
+            </div>
+
+            {activeMenu != null && <div className='nav-mm-subnav-cont'>
+                {menus?.[activeMenu].component}
+            </div>}
+        </div>
+    )
+}
+
+function ChannelMenu({ clickEvent, selectedChannelName }) {
+    return (
+        <div className='nav-piece nav-channel-button nav-icon-text' id='channel-nav-cont' onClick={() => clickEvent(0)}>
+            <FontAwesomeIcon icon={faHashtag} />
+            <p>{selectedChannelName}</p>
+        </div>
+    )
+}
+
+function AuthorMenu({ clickEvent, selectedUserName }) {
+    return (
+        <div className='nav-piece nav-author-button nav-icon-text' id='author-nav-cont' onClick={() => clickEvent(1)}>
+            <FontAwesomeIcon icon={faAt} />
+            <p>{selectedUserName}</p>
+        </div>
+    )
+}
+
+function ChannelSelector() {
+    return (
+        <div className='nav-channel-selector'>
+        </div>
+    )
+}
+
+function AuthorSelector() {
+    return (
+        <div className='nav-author-selector'>
+            Author Selector
+        </div>
+    )
+}
+
+function FilterSelector() {
+    return (
+        <div className='nav-filter-selector'>
+            Filter Selector
+        </div>
+    )
+}
+
+function Searchbar() {
+    return (
+        <div className='nav-Searchbar'>
+            Searchbar
+        </div>
+    )
 }
 
 export default Navbar;

@@ -40,10 +40,10 @@ function formatTitle(title) {
 
 function formatChannelName(channelName) {
     if (!channelName) return
-    if (channelName == "all") return "# all"
+    if (channelName == "all") return "all"
 
 
-    return "# " + channelName
+    return channelName
         .toLowerCase()
         .replace(/ /g, "-")
 

@@ -68,9 +68,6 @@ function App() {
 
     const [showLoader, setShowLoader] = useState(true);
 
-    // Navbar state
-    const [isMenuVisible, setIsMenuVisible] = useState(false);
-
     // Videos and filtering state
     const [baseVideos, setBaseVideos] = useState({});
     const [filteredVideos, setFilteredVideos] = useState([]);
@@ -327,11 +324,13 @@ function App() {
             }
             {!showLoader &&
                 <div className="App" id="App" ref={appRef}>
-                    <Navbar
-                        isMenuVisible={isMenuVisible} setIsMenuVisible={setIsMenuVisible} userIcons={userIcons}
-                        CHANNELS={CHANNELS} selectedChannel={selectedChannel} setSelectedChannel={setSelectedChannel}
-                        selectedUser={selectedUser} setSelectedUser={setSelectedUser} getPosterCounts={getPosterCounts}
-                    />
+                    <div className='app-navbar-cont'>
+                        <Navbar
+                            userIcons={userIcons}
+                            CHANNELS={CHANNELS} selectedChannel={selectedChannel} setSelectedChannel={setSelectedChannel}
+                            selectedUser={selectedUser} setSelectedUser={setSelectedUser} getPosterCounts={getPosterCounts}
+                        />
+                    </div>
 
                     <div ref={videoGridRef} className="video-grid">
                         {filteredVideos.length > 0 ? (
