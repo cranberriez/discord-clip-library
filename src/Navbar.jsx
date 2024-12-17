@@ -1,9 +1,9 @@
 import React, { createContext, useContext, useEffect, useState, useRef } from 'react';
-import { formatChannelName, formatUsername } from './utils/formatUtils';
+import { formatChannelName, formatUsername, stringToHex } from './utils/formatUtils';
 
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faBars, faFilm, faHeart, faGear, faArrowRightFromBracket, faAt, faHashtag, faSliders } from '@fortawesome/free-solid-svg-icons';
-import { SettingsMenuIcon, SearchIcon, NoEyeIcon } from '@vidstack/react/icons';
+import { faBars, faFilm, faHeart, faGear, faArrowRightFromBracket, faAt, faHashtag } from '@fortawesome/free-solid-svg-icons';
+import { SettingsMenuIcon, SearchIcon, XMarkIcon } from '@vidstack/react/icons';
 
 import './css/Navbar.css';
 
@@ -24,13 +24,14 @@ function Navbar({ CHANNELS, selectedChannel, setSelectedChannel, userIcons, sele
     const [isTouchDevice, setIsTouchDevice] = useState(false);
     const [divWidth, setDivWidth] = useState(0);
 
-    const selectedUserName = formatUsername(selectedUser ?? "All Users")
+    const selectedUserName = formatUsername(selectedUser) ?? "everyone"
     const selectedChannelName = formatChannelName(CHANNELS[selectedChannel]?.name ?? selectedChannel);
     const posterCounts = getPosterCounts(selectedChannel);
     const totalClipCount = Object.values(posterCounts).reduce((sum, count) => sum + count, 0);
 
     const navItemLeft = useRef(null);
-    const [leftWidth, setLeftWidth] = useState(0);
+    const [rightWidth, setRightWidth] = useState(0);
+    const navbarRef = useRef(null);
 
     // Navbar Constants
     const menus = [
@@ -39,6 +40,63 @@ function Navbar({ CHANNELS, selectedChannel, setSelectedChannel, userIcons, sele
         { component: <FilterSelector /> },
         { component: <Searchbar /> },
     ]
+
+    // Close menus if clicking outside
+    useEffect(() => {
+        const handleDocumentClick = (e) => {
+            if (navbarRef.current && !navbarRef.current.contains(e.target)) {
+                setActiveMenu(null);
+                setIsUserVisible(false);
+            }
+        };
+
+        document.addEventListener("click", handleDocumentClick);
+
+        return () => {
+            document.removeEventListener("click", handleDocumentClick);
+        };
+    }, []);
+
+    // Something lol idk
+    useEffect(() => {
+        if (!(selectedUser in posterCounts)) setSelectedUser(null);
+    }, [posterCounts, selectedUser, selectedChannel]);
+
+    // Function to update the right empty column's width
+    const updateWidth = () => {
+        if (navItemLeft.current) {
+            setRightWidth(navItemLeft.current.offsetWidth);
+        }
+    };
+
+    const checkTouchDevice = () => {
+        setIsTouchDevice(
+            'ontouchstart' in window || navigator.maxTouchPoints > 0
+        );
+    };
+
+    const onResize = () => {
+        checkTouchDevice();
+        updateWidth();
+        console.log(rightWidth)
+    }
+
+    // UseEffect to handle initial load and window resize
+    useEffect(() => {
+        window.addEventListener('resize', onResize);
+
+        checkTouchDevice();
+        updateWidth();
+
+        return () => {
+            window.removeEventListener('resize', onResize);
+        };
+    }, []);
+
+    const authorCount = Object.keys(userIcons).length;
+    const authorCountSqrt = Math.round(Math.sqrt(authorCount)) + 1
+    const channelCount = Object.keys(CHANNELS).length;
+    const channelCountSqrt = Math.round(Math.sqrt(channelCount))
 
     // Context Available Vars
     const contextValue = {
@@ -60,56 +118,23 @@ function Navbar({ CHANNELS, selectedChannel, setSelectedChannel, userIcons, sele
         setSelectedUser
     }
 
-    useEffect(() => {
-        if (!(selectedUser in posterCounts)) setSelectedUser(null);
-    }, [posterCounts, selectedUser, selectedChannel]);
-
-    // Touch screen detection
-    useEffect(() => {
-        const checkTouchDevice = () => {
-            setIsTouchDevice(
-                'ontouchstart' in window || navigator.maxTouchPoints > 0
-            );
-        };
-
-        checkTouchDevice();
-        window.addEventListener('resize', checkTouchDevice);
-        return () => {
-            window.removeEventListener('resize', checkTouchDevice);
-        };
-    }, []);
-
-    // Function to update the left column's width
-    const updateWidth = () => {
-        if (navItemLeft.current) {
-            setLeftWidth(navItemLeft.current.offsetWidth);
-        }
-    };
-
-    // UseEffect to handle initial load and window resize
-    useEffect(() => {
-        updateWidth();
-        window.addEventListener('resize', updateWidth);
-
-        return () => {
-            window.removeEventListener('resize', updateWidth);
-        };
-    }, []);
-
     return (
         <NavbarProvider value={contextValue}>
             <div
                 className={`nav-container`}
+                ref={navbarRef}
                 style={{
-                    '--author-count': Object.keys(userIcons).length,
-                    '--channel-count': Object.keys(CHANNELS).length,
+                    '--author-count': authorCount,
+                    '--author-count-sqrt': authorCountSqrt,
+                    '--channel-count': channelCount,
+                    '--channel-count-sqrt': channelCountSqrt
                 }}
             >
                 <UserMenu reference={navItemLeft} />
                 <MainMenu />
                 <div
                     className='RIGHT-FILLER-ITEM'
-                    style={{ width: `${leftWidth}px` }}
+                    style={{ width: `${rightWidth}px` }}
                 >
                 </div>
             </div>
@@ -118,35 +143,30 @@ function Navbar({ CHANNELS, selectedChannel, setSelectedChannel, userIcons, sele
 }
 
 // USER MENU
-function UserMenu() {
-    const { isUserVisible, setIsUserVisible, reference } = useNavbarContext();
+function UserMenu({ reference }) {
+    const { isUserVisible, setIsUserVisible, setActiveMenu } = useNavbarContext();
 
-    const handleMouseEnter = () => {
-        setIsUserVisible(true)
-    }
-
-    const handleMouseLeave = () => {
-        setIsUserVisible(false)
+    const handleToggleMenu = () => {
+        setActiveMenu(null)
+        setIsUserVisible((prev) => !prev)
     }
 
     return (
         <div
             className={`nav-element nav-usermenu ${isUserVisible ? 'menu-visible' : ''}`}
-            onMouseEnter={handleMouseEnter}
-            onMouseLeave={handleMouseLeave}
             ref={reference}
         >
-            <MenuButton iconUrl={faBars} />
-            <UserButton />
+            <MenuButton iconUrl={faBars} toggleUserMenu={handleToggleMenu} />
+            <UserButton toggleUserMenu={handleToggleMenu} />
 
             {isUserVisible && <UserMenuDropdown />}
         </div>
     )
 }
 
-function MenuButton({ iconUrl }) {
+function MenuButton({ iconUrl, toggleUserMenu }) {
     return (
-        <div className='nav-piece nav-button'>
+        <div className='nav-piece nav-button' onClick={() => toggleUserMenu()}>
             <FontAwesomeIcon icon={iconUrl}
                 style={{
                     stroke: 'black',
@@ -158,9 +178,9 @@ function MenuButton({ iconUrl }) {
     )
 }
 
-function UserButton() {
+function UserButton({ toggleUserMenu }) {
     return (
-        <div className='nav-piece user-piece'>
+        <div className='nav-piece user-piece' onClick={() => toggleUserMenu()}>
             <div className='nav-user-dtls'>
                 <p className='nav-lia'>Logged In As</p>
                 <p className='nav-liu'>__jacob__</p>
@@ -198,13 +218,14 @@ function UMDropdownItem({ iconUrl, text }) {
 
 // MAIN MENU
 function MainMenu() {
-    const { activeMenu, setActiveMenu, selectedUserName, selectedChannelName, menus } = useNavbarContext();
+    const { activeMenu, setActiveMenu, selectedUserName, selectedChannelName, menus, setIsUserVisible } = useNavbarContext();
 
     const handleNavSelect = (navItem) => {
         if (navItem == activeMenu) {
             setActiveMenu(null)
         }
         else {
+            setIsUserVisible(false)
             setActiveMenu(navItem)
         }
     }
@@ -212,24 +233,46 @@ function MainMenu() {
     return (
         <div className='nav-element nav-mainmenu'>
             <ChannelMenu clickEvent={handleNavSelect} selectedChannelName={selectedChannelName} />
+
             <AuthorMenu clickEvent={handleNavSelect} selectedUserName={selectedUserName} />
-            <div className='nav-piece nav-button' onClick={() => handleNavSelect(2)} >
+
+            <div className={`nav-piece nav-button ${activeMenu === 2 ? 'active' : ''}`} onClick={() => handleNavSelect(2)} >
                 <SettingsMenuIcon size={40} />
             </div>
-            <div className='nav-piece nav-button' onClick={() => handleNavSelect(3)} >
+
+            <div className={`nav-piece nav-button ${activeMenu === 3 ? 'active' : ''}`} onClick={() => handleNavSelect(3)} >
                 <SearchIcon size={40} />
             </div>
 
             {activeMenu != null && <div className='nav-mm-subnav-cont'>
                 {menus?.[activeMenu].component}
+                <MenuCloseButton />
             </div>}
         </div>
     )
 }
 
-function ChannelMenu({ clickEvent, selectedChannelName }) {
+function MenuCloseButton() {
+    const { activeMenu, setActiveMenu } = useNavbarContext();
+
+    const handleClose = () => {
+        if (activeMenu >= 0) {
+            setActiveMenu(null)
+        }
+    }
+
     return (
-        <div className='nav-piece nav-channel-button nav-icon-text' id='channel-nav-cont' onClick={() => clickEvent(0)}>
+        <div className='submenu-close-button' onClick={() => handleClose()}>
+            <XMarkIcon size={24} />
+        </div>
+    )
+}
+
+function ChannelMenu({ clickEvent, selectedChannelName }) {
+    const { activeMenu } = useNavbarContext();
+
+    return (
+        <div className={`nav-piece nav-channel-button nav-icon-text ${activeMenu === 0 ? 'active' : ''}`} id='channel-nav-cont' onClick={() => clickEvent(0)}>
             <FontAwesomeIcon icon={faHashtag} />
             <p>{selectedChannelName}</p>
         </div>
@@ -237,8 +280,10 @@ function ChannelMenu({ clickEvent, selectedChannelName }) {
 }
 
 function AuthorMenu({ clickEvent, selectedUserName }) {
+    const { activeMenu } = useNavbarContext();
+
     return (
-        <div className='nav-piece nav-author-button nav-icon-text' id='author-nav-cont' onClick={() => clickEvent(1)}>
+        <div className={`nav-piece nav-channel-button nav-icon-text ${activeMenu === 1 ? 'active' : ''}`} id='author-nav-cont' onClick={() => clickEvent(1)}>
             <FontAwesomeIcon icon={faAt} />
             <p>{selectedUserName}</p>
         </div>
@@ -247,43 +292,105 @@ function AuthorMenu({ clickEvent, selectedUserName }) {
 
 function ChannelSelector() {
     const { CHANNELS } = useNavbarContext();
-    // console.log(Object.entries(CHANNELS)) // Debugging
+
+    // Create an array from CHANNELS entries and sort it by name
+    const sortedChannels = Object.entries(CHANNELS)
+        .map(([channelID, channelInfo]) => ({ channelID, ...channelInfo })) // Map to an object array
+        .sort((a, b) => a.name.localeCompare(b.name)); // Sort alphabetically by 'name'
 
     return (
-        <div className='nav-channels-selector'>
-            <p>Channel Selector</p>
-            <div className='nav-channels-container'>
+        <div className='nav-submenu-container'>
+            <p className='nav-selector-title'>Channel Selector</p>
+            <div className='nav-channels-selector'>
+                {/* Static "all" channel */}
                 <ChannelItem channelID={"all"} channelInfo={{ name: "all" }} />
-                {Object.entries(CHANNELS).map((channel) => {
-                    const channelID = channel[0]
-                    const channelInfo = channel[1]
-                    return (
-                        <ChannelItem key={channelID} channelID={channelID} channelInfo={channelInfo} />
-                    )
-                })}
+
+                {/* Map the sorted channels */}
+                {sortedChannels.map(({ channelID, name }) => (
+                    <ChannelItem
+                        key={channelID}
+                        channelID={channelID}
+                        channelInfo={{ name }}
+                    />
+                ))}
             </div>
         </div>
-    )
+    );
 }
 
 function ChannelItem({ channelID, channelInfo }) {
     const { selectedChannel, setSelectedChannel } = useNavbarContext();
     // console.log(selectedChannel, channelID, selectedChannel === channelID) // Debugging
+    const hashColor = stringToHex(channelInfo.name)
+    const isAll = channelInfo.name == "all"
 
     return (
         <div
-            className={`nav-channels-item ${channelID === selectedChannel ? 'active-channel' : ''}`}
+            className={`channels-item ${channelID === selectedChannel ? 'active-channel' : ''}`}
             onClick={() => setSelectedChannel(channelID)}
         >
-            {channelInfo.name}
+            <p>
+                <span
+                    className={`channel-hashtag ${isAll ? 'rainbow-text' : ''}`}
+                    style={{
+                        color: hashColor
+                    }}
+                ># </span>
+                {formatChannelName(channelInfo.name)}
+            </p>
         </div>
     )
 }
 
 function AuthorSelector() {
+    const { userIcons } = useNavbarContext();
+
+    const sortedUsers = Object.values(userIcons)
+        .sort((a, b) => a.Name.localeCompare(b.Name));
+
     return (
-        <div className='nav-author-selector'>
-            Author Selector
+        <div className='nav-submenu-container'>
+            <p className='nav-selector-title'>Author Selector</p>
+            <div className='nav-authors-selector'>
+                {/* Map the sorted channels */}
+                {sortedUsers.map(({ Name, Url }) => (
+                    <AuthorItem
+                        key={Name}
+                        Name={Name}
+                        Url={Url}
+                    />
+                ))}
+            </div>
+        </div>
+    )
+}
+
+function AuthorItem({ Name, Url }) {
+    const { selectedUser, setSelectedUser } = useNavbarContext();
+
+    const handleSelectUser = () => {
+        if (formatUsername(selectedUser) == formatUsername(Name)) {
+            console.log("resetting user")
+            console.log(selectedUser, Name)
+            setSelectedUser(null)
+        }
+        else {
+            console.log("setting user to", Name)
+            console.log(selectedUser, Name)
+            setSelectedUser(Name)
+        }
+    }
+
+    const isSelected = (selectedUser == Name)
+
+    return (
+        <div className={`authors-item ${isSelected ? 'active' : ''}`} onClick={handleSelectUser}>
+            <div className='author-item-icon-cont'>
+                <img className='author-item-icon' src={Url}></img>
+            </div>
+            <div className='author-item-name'>
+                {formatUsername(Name)}
+            </div>
         </div>
     )
 }

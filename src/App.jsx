@@ -85,6 +85,7 @@ function App() {
 
     // Current playing video / skip to video
     const [activeVideo, setActiveVideo] = useState(null);
+    const [lastActiveVideo, setLastActiveVideo] = useState(null);
     const [clipId, setClipId] = useState(null);
 
     // Track visible videos
@@ -112,6 +113,11 @@ function App() {
         const currentIndex = filteredVideos.findIndex((video) => video.Id === activeVideo.Id);
         const previousIndex = (currentIndex - 1 + filteredVideos.length) % filteredVideos.length;
         return filteredVideos[previousIndex];
+    };
+
+    const getPageForVideo = (videoId) => {
+        const index = filteredVideos.findIndex(video => video.Id === videoId);
+        return Math.floor(index / itemsPerPage);
     };
 
     // Data fetching
@@ -189,11 +195,13 @@ function App() {
         applyFilters();
     }, [baseVideos, selectedChannel, selectedUser]);
 
-    // Scroll handling
+    // Scroll prevention when video active
     useEffect(() => {
         const appRoot = appRef.current;
 
         if (activeVideo) {
+            setLastActiveVideo(activeVideo)
+
             if (appRoot) {
                 scrollPosition.current = appRoot.scrollTop;
                 appRoot.classList.add('no-scroll');
@@ -212,6 +220,7 @@ function App() {
         };
     }, [activeVideo]);
 
+    // Scroll handling for setting page
     useEffect(() => {
         const attachScrollListener = () => {
             const currentApp = appRef.current;
@@ -264,16 +273,21 @@ function App() {
 
         if (queryClip && queryChan) {
             setClipId(queryClip);
+            console.log("both set: ", queryClip, queryChan)
         }
     }, []);
 
+    // Setting activeVideo when clipID and selectedChannel are set
+    // these are set from query params
     useEffect(() => {
-        if (clipId && selectedChannel) {
+        if (clipId && selectedChannel && filteredVideos.length > 0) {
             const targetVideo = filteredVideos.find((video) => video.Id === clipId);
 
             if (targetVideo) {
                 setActiveVideo(targetVideo);
                 setClipId(null);
+            } else {
+                console.warn("Clip ID not found in filtered videos:", clipId);
             }
         }
     }, [clipId, selectedChannel, filteredVideos]);

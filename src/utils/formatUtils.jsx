@@ -3,6 +3,8 @@ function capitalizeFirstLetter(str) {
 }
 
 function formatUsername(username) {
+    if (!username) return username
+
     if (username.includes("Deleted User#0000")) return "Arshy"
     return capitalizeFirstLetter(username.replace(/_/g, ''))
 }
@@ -66,11 +68,50 @@ function formatTime(seconds) {
     }
 }
 
+// Configuration for the stringToHex Function
+const config = {
+    saturation: 80, // Base saturation (80-100% by default)
+    lightness: 55,  // Base lightness (50-60% by default)
+    satRange: 10,   // Slight variation range for saturation
+    lightRange: 15   // Slight variation range for lightness
+};
+
+function stringToHex(str) {
+    // Configuration defaults
+    const { saturation = 80, lightness = 55, satRange = 15, lightRange = 10 } = config;
+
+    // Step 1: Hash the string into a single number
+    let hash = 0;
+    for (let i = 0; i < str.length; i++) {
+        hash = (hash << 5) - hash + str.charCodeAt(i);
+    }
+
+    // Step 2: Generate HSL values
+    const hue = Math.abs(hash % 360); // Ensures hue is in 0-360 range
+    const sat = saturation + (Math.abs(hash % satRange)); // Slight variation in saturation
+    const light = lightness + (Math.abs(hash % lightRange)); // Slight variation in lightness
+
+    // Step 3: Convert HSL to Hex
+    return hslToHex(hue, sat, light);
+}
+
+function hslToHex(h, s, l) {
+    l /= 100;
+    const a = s * Math.min(l, 1 - l) / 100;
+    const f = n => {
+        const k = (n + h / 30) % 12;
+        const color = l - a * Math.max(-1, Math.min(k - 3, 9 - k, 1));
+        return Math.round(255 * color).toString(16).padStart(2, '0');
+    };
+    return `#${f(0)}${f(8)}${f(4)}`;
+}
+
 export {
     capitalizeFirstLetter,
     formatUsername,
     formatDate,
     formatTitle,
     formatChannelName,
-    formatTime
+    formatTime,
+    stringToHex
 };

@@ -1,5 +1,7 @@
 :root {
-    font-family: Inter, system-ui, Avenir, Helvetica, Arial, sans-serif;
+    font-family: "Lexend", sans-serif;
+    font-optical-sizing: auto;
+    font-style: normal;
     line-height: 1.5;
     font-weight: 400;
 
@@ -11,12 +13,12 @@
     -moz-osx-font-smoothing: grayscale;
 
     --text-light: #DADADA;
-    --text-gray: #A6A6A6;
+    --text-gray: #B0B0B0;
     --text-dark: #848484;
 
     --bg-light: #3C3938;
     --bg-default: #141414;
-    --bg-dark: #0C0C0C;
+    --bg-dark: #0f0f0f;
 
     --border-dark: #101010;
 
@@ -32,7 +34,7 @@
     --dark-overlay: rgba(26, 25, 25, 0.85);
 
     --channel-icon: #5FA8D3;
-    --channel-text: #AAC3D2;
+    --channel-text: #a3c1d3;
     --author-icon: #E76F51;
     --author-text: #E3B4A8;
 
