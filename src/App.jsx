@@ -1,11 +1,13 @@
 import React, { useEffect, useState, useMemo, useRef } from 'react';
+import { throttle } from 'lodash';
+import debounce from 'lodash.debounce';
+
 import { usePosterCountsFactory } from './hooks/usePosterCountsFactory';
 import VideoItem from './VideoItem';
 import VideoPlayer from './VideoPlayer';
 import Navbar from './Navbar';
+import { FilterManager, defaultOptions } from "./utils/filterManager";
 import './css/App.css';
-import { throttle } from 'lodash';
-import debounce from 'lodash.debounce';
 
 const CHANNELS = {
     "675233762900049930": {

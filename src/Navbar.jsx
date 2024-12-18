@@ -59,7 +59,9 @@ function Navbar({ CHANNELS, selectedChannel, setSelectedChannel, userIcons, sele
 
     // Something lol idk
     useEffect(() => {
-        if (!(selectedUser in posterCounts)) setSelectedUser(null);
+        if (!(selectedUser in posterCounts)) {
+            setSelectedUser(null);
+        }
     }, [posterCounts, selectedUser, selectedChannel]);
 
     // Function to update the right empty column's width
@@ -120,23 +122,27 @@ function Navbar({ CHANNELS, selectedChannel, setSelectedChannel, userIcons, sele
 
     return (
         <NavbarProvider value={contextValue}>
-            <div
-                className={`nav-container`}
-                ref={navbarRef}
-                style={{
-                    '--author-count': authorCount,
-                    '--author-count-sqrt': authorCountSqrt,
-                    '--channel-count': channelCount,
-                    '--channel-count-sqrt': channelCountSqrt
-                }}
-            >
-                <UserMenu reference={navItemLeft} />
-                <MainMenu />
-                <div
-                    className='RIGHT-FILLER-ITEM'
-                    style={{ width: `${rightWidth}px` }}
-                >
+            <div className='fixed-nav-container' ref={navbarRef}>
+                <div className={`nav-container`} >
+                    <UserMenu reference={navItemLeft} />
+                    <MainMenu />
+                    <div
+                        className='RIGHT-FILLER-ITEM'
+                        style={{ width: `${rightWidth}px` }}
+                    >
+                    </div>
                 </div>
+                {activeMenu != null &&
+                    <div className='subnav-container'
+                        style={{
+                            '--author-count': authorCount,
+                            '--author-count-sqrt': authorCountSqrt,
+                            '--channel-count': channelCount,
+                            '--channel-count-sqrt': channelCountSqrt
+                        }}
+                    >
+                        {menus?.[activeMenu].component}
+                    </div>}
             </div>
         </NavbarProvider>
     );
@@ -243,11 +249,6 @@ function MainMenu() {
             <div className={`nav-piece nav-button ${activeMenu === 3 ? 'active' : ''}`} onClick={() => handleNavSelect(3)} >
                 <SearchIcon size={40} />
             </div>
-
-            {activeMenu != null && <div className='nav-mm-subnav-cont'>
-                {menus?.[activeMenu].component}
-                <MenuCloseButton />
-            </div>}
         </div>
     )
 }
@@ -314,6 +315,7 @@ function ChannelSelector() {
                     />
                 ))}
             </div>
+            <MenuCloseButton />
         </div>
     );
 }
@@ -323,10 +325,11 @@ function ChannelItem({ channelID, channelInfo }) {
     // console.log(selectedChannel, channelID, selectedChannel === channelID) // Debugging
     const hashColor = stringToHex(channelInfo.name)
     const isAll = channelInfo.name == "all"
+    const isSelected = (selectedChannel === channelID)
 
     return (
         <div
-            className={`channels-item ${channelID === selectedChannel ? 'active-channel' : ''}`}
+            className={`channels-item ${isSelected ? 'active' : ''}`}
             onClick={() => setSelectedChannel(channelID)}
         >
             <p>
@@ -361,14 +364,22 @@ function AuthorSelector() {
                     />
                 ))}
             </div>
+            <MenuCloseButton />
         </div>
     )
 }
 
 function AuthorItem({ Name, Url }) {
-    const { selectedUser, setSelectedUser } = useNavbarContext();
+    const { selectedUser, setSelectedUser, posterCounts } = useNavbarContext();
+
+    const isSelected = (selectedUser == Name)
+    const hasPosts = (Name in posterCounts)
+    const postCount = posterCounts?.[Name] ?? 0
+    const postText = postCount === 1 ? "Clip" : "Clips"
 
     const handleSelectUser = () => {
+        if (!hasPosts) return
+
         if (formatUsername(selectedUser) == formatUsername(Name)) {
             console.log("resetting user")
             console.log(selectedUser, Name)
@@ -381,15 +392,18 @@ function AuthorItem({ Name, Url }) {
         }
     }
 
-    const isSelected = (selectedUser == Name)
-
     return (
-        <div className={`authors-item ${isSelected ? 'active' : ''}`} onClick={handleSelectUser}>
+        <div className={`authors-item ${isSelected ? 'active' : ''} ${hasPosts ? '' : 'disabled'}`} onClick={handleSelectUser}>
             <div className='author-item-icon-cont'>
                 <img className='author-item-icon' src={Url}></img>
             </div>
-            <div className='author-item-name'>
-                {formatUsername(Name)}
+            <div className='author-details-cont'>
+                <div className='author-item-name'>
+                    {formatUsername(Name)}
+                </div>
+                <div className='author-item-posts'>
+                    {postCount} {postText}
+                </div>
             </div>
         </div>
     )

@@ -17,8 +17,8 @@
 .video-grid {
     display: flex;
     flex-wrap: wrap;
-    gap: 1em;
-    row-gap: 3em;
+    gap: 1rem;
+    row-gap: 3rem;
     justify-content: center;
     width: 100%;
     margin-top: 10rem;
