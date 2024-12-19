@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useMemo, useRef } from 'react';
-import { throttle } from 'lodash';
+import { filter, throttle } from 'lodash';
 import debounce from 'lodash.debounce';
 
 import { usePosterCountsFactory } from './hooks/usePosterCountsFactory';
@@ -64,21 +64,25 @@ const CHANNELS = {
     },
 }
 
+// Filter Management
+const filterManager = new FilterManager(defaultOptions);
+
 function App() {
     const itemsPerPage = 50;
     const isDevelopment = import.meta.env.MODE === 'development';
 
     const [showLoader, setShowLoader] = useState(true);
 
-    // Videos and filtering state
+    // Videos and other imported data
     const [baseVideos, setBaseVideos] = useState({});
     const [filteredVideos, setFilteredVideos] = useState([]);
+    const [page, setPage] = useState(null);
     const [runtimes, setRuntimes] = useState({});
-    const [selectedChannel, setSelectedChannel] = useState("all");
 
-    // User data state
+    // User and channel state
     const [userIcons, setUserIcons] = useState({});
     const [selectedUser, setSelectedUser] = useState(null);
+    const [selectedChannel, setSelectedChannel] = useState("all"); // need to fix to allow null
 
     // Loading states
     const [videosLoading, setVideosLoading] = useState(true);
@@ -92,12 +96,10 @@ function App() {
 
     // Track visible videos
     const [visibleVideos, setVisibleVideos] = useState({});
-    const [page, setPage] = useState(null);
 
     const videoGridRef = useRef(null);
     const appRef = useRef(null);
     const scrollPosition = useRef(0);
-
 
     // Helper functions
     const getPosterCounts = usePosterCountsFactory(baseVideos);
@@ -173,29 +175,33 @@ function App() {
         fetchAllMessages();
     }, []);
 
-    // Video filtering and pagination
+    // Apply filters when baseVideos or filters change
     useEffect(() => {
-        if (!baseVideos) return;
-
-        const applyFilters = () => {
+        const handleFilterUpdate = (updatedFilters) => {
+            // console.log("Filters updated:", updatedFilters);
             const allVideos = Object.values(baseVideos);
-
-            const channelFiltered = selectedChannel === "all"
-                ? allVideos
-                : allVideos.filter((video) => video.channelId === selectedChannel);
-
-            const userFiltered = selectedUser
-                ? channelFiltered.filter((video) => video.Poster === selectedUser)
-                : channelFiltered;
-
-            const sortedVideos = userFiltered.sort((a, b) => b.Date - a.Date);
-
-            setFilteredVideos(sortedVideos);
-            setPage(0);
+            const filtered = filterManager.applyFilters(allVideos);
+            setFilteredVideos(filtered);
         };
 
-        applyFilters();
-    }, [baseVideos, selectedChannel, selectedUser]);
+        // Subscribe to FilterManager updates
+        filterManager.subscribe(handleFilterUpdate);
+
+        handleFilterUpdate()
+
+        return () => {
+            // Cleanup the subscription
+            filterManager.subscribers = filterManager.subscribers.filter(
+                (cb) => cb !== handleFilterUpdate
+            );
+        };
+    }, [baseVideos]);
+
+    // Temporary function to handle channel and user changes
+    useEffect(() => {
+        filterManager.setFilter("channelId", selectedChannel === "all" ? null : selectedChannel)
+        filterManager.setFilter("Poster", selectedUser)
+    }, [selectedChannel, selectedUser])
 
     // Scroll prevention when video active
     useEffect(() => {
@@ -342,7 +348,7 @@ function App() {
                 <div className="App" id="App" ref={appRef}>
                     <div className='app-navbar-cont'>
                         <Navbar
-                            userIcons={userIcons}
+                            userIcons={userIcons} filterManager={filterManager}
                             CHANNELS={CHANNELS} selectedChannel={selectedChannel} setSelectedChannel={setSelectedChannel}
                             selectedUser={selectedUser} setSelectedUser={setSelectedUser} getPosterCounts={getPosterCounts}
                         />

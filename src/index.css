@@ -17,8 +17,8 @@
     --text-dark: #848484;
 
     --bg-light: #3C3938;
-    --bg-default: #141414;
-    --bg-dark: #0f0f0f;
+    --bg-default: #161616;
+    --bg-dark: #0c0c0c;
 
     --border-dark: #101010;
 
@@ -26,10 +26,10 @@
     --success: #2ECC71;
     --error: #C55349;
 
-    --primary: #F4A867;
-    --primary-light: #EC8A74;
-    --primary-dark: #2D0F08;
-    --primary-25: rgba(195, 59, 30, 0.25);
+    --primary: #83f467;
+    --primary-light: #a8ec74;
+    --primary-dark: #1d2d08;
+    --primary-25: rgba(118, 195, 30, 0.25);
 
     --dark-overlay: rgba(26, 25, 25, 0.85);
 

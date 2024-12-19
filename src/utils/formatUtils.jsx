@@ -106,6 +106,17 @@ function hslToHex(h, s, l) {
     return `#${f(0)}${f(8)}${f(4)}`;
 }
 
+function formatFilterName(filterName) {
+    if (!filterName) return filterName
+
+    const splitName = filterName.split('_')
+    for (let i = 0; i < splitName.length; i++) {
+        const element = splitName[i];
+        splitName[i] = capitalizeFirstLetter(element)
+    }
+    return splitName.join(" ")
+}
+
 export {
     capitalizeFirstLetter,
     formatUsername,
@@ -113,5 +124,6 @@ export {
     formatTitle,
     formatChannelName,
     formatTime,
-    stringToHex
+    stringToHex,
+    formatFilterName
 };

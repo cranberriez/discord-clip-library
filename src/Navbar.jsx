@@ -1,11 +1,12 @@
 import React, { createContext, useContext, useEffect, useState, useRef } from 'react';
-import { formatChannelName, formatUsername, stringToHex } from './utils/formatUtils';
+import { formatChannelName, formatUsername, stringToHex, formatFilterName } from './utils/formatUtils';
 
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faBars, faFilm, faHeart, faGear, faArrowRightFromBracket, faAt, faHashtag } from '@fortawesome/free-solid-svg-icons';
-import { SettingsMenuIcon, SearchIcon, XMarkIcon } from '@vidstack/react/icons';
+import { SettingsMenuIcon, SearchIcon, XMarkIcon, ChevronDownIcon } from '@vidstack/react/icons';
 
 import './css/Navbar.css';
+import { filter } from 'lodash';
 
 const NavbarContext = createContext();
 
@@ -17,7 +18,7 @@ const NavbarProvider = ({ children, value }) => (
 
 const useNavbarContext = () => useContext(NavbarContext);
 
-function Navbar({ CHANNELS, selectedChannel, setSelectedChannel, userIcons, selectedUser, setSelectedUser, getPosterCounts }) {
+function Navbar({ filterManager, CHANNELS, selectedChannel, setSelectedChannel, userIcons, selectedUser, setSelectedUser, getPosterCounts }) {
     // Navbar state
     const [isUserVisible, setIsUserVisible] = useState(false);
     const [activeMenu, setActiveMenu] = useState(null);
@@ -44,10 +45,20 @@ function Navbar({ CHANNELS, selectedChannel, setSelectedChannel, userIcons, sele
     // Close menus if clicking outside
     useEffect(() => {
         const handleDocumentClick = (e) => {
-            if (navbarRef.current && !navbarRef.current.contains(e.target)) {
+            // Ignore clicks on elements with the `data-ignore-click` attribute
+            if (e.target.closest('[data-ignore-click]')) {
+                return;
+            }
+            else {
                 setActiveMenu(null);
                 setIsUserVisible(false);
             }
+
+            // // Close menus if clicking outside the navbar
+            // if (navbarRef.current && !navbarRef.current.contains(e.target)) {
+            //     setActiveMenu(null);
+            //     setIsUserVisible(false);
+            // }
         };
 
         document.addEventListener("click", handleDocumentClick);
@@ -102,6 +113,7 @@ function Navbar({ CHANNELS, selectedChannel, setSelectedChannel, userIcons, sele
 
     // Context Available Vars
     const contextValue = {
+        filterManager,
         // Created State / Consts
         isUserVisible,
         setIsUserVisible,
@@ -160,6 +172,7 @@ function UserMenu({ reference }) {
     return (
         <div
             className={`nav-element nav-usermenu ${isUserVisible ? 'menu-visible' : ''}`}
+            data-ignore-click
             ref={reference}
         >
             <MenuButton iconUrl={faBars} toggleUserMenu={handleToggleMenu} />
@@ -173,13 +186,7 @@ function UserMenu({ reference }) {
 function MenuButton({ iconUrl, toggleUserMenu }) {
     return (
         <div className='nav-piece nav-button' onClick={() => toggleUserMenu()}>
-            <FontAwesomeIcon icon={iconUrl}
-                style={{
-                    stroke: 'black',
-                    strokeWidth: 1,
-                    fill: 'none', // Remove the default fill if needed
-                }}
-            />
+            <FontAwesomeIcon icon={iconUrl} />
         </div>
     )
 }
@@ -237,7 +244,7 @@ function MainMenu() {
     }
 
     return (
-        <div className='nav-element nav-mainmenu'>
+        <div className='nav-element nav-mainmenu' data-ignore-click >
             <ChannelMenu clickEvent={handleNavSelect} selectedChannelName={selectedChannelName} />
 
             <AuthorMenu clickEvent={handleNavSelect} selectedUserName={selectedUserName} />
@@ -273,7 +280,7 @@ function ChannelMenu({ clickEvent, selectedChannelName }) {
     const { activeMenu } = useNavbarContext();
 
     return (
-        <div className={`nav-piece nav-channel-button nav-icon-text ${activeMenu === 0 ? 'active' : ''}`} id='channel-nav-cont' onClick={() => clickEvent(0)}>
+        <div className={`nav-piece nav-channel-button nav-icon-text ${activeMenu === 0 ? 'active' : ''}`} id='channel-nav-cont' onClick={() => clickEvent(0)} data-ignore-click >
             <FontAwesomeIcon icon={faHashtag} />
             <p>{selectedChannelName}</p>
         </div>
@@ -284,7 +291,7 @@ function AuthorMenu({ clickEvent, selectedUserName }) {
     const { activeMenu } = useNavbarContext();
 
     return (
-        <div className={`nav-piece nav-channel-button nav-icon-text ${activeMenu === 1 ? 'active' : ''}`} id='author-nav-cont' onClick={() => clickEvent(1)}>
+        <div className={`nav-piece nav-channel-button nav-icon-text ${activeMenu === 1 ? 'active' : ''}`} id='author-nav-cont' onClick={() => clickEvent(1)} data-ignore-click >
             <FontAwesomeIcon icon={faAt} />
             <p>{selectedUserName}</p>
         </div>
@@ -300,7 +307,7 @@ function ChannelSelector() {
         .sort((a, b) => a.name.localeCompare(b.name)); // Sort alphabetically by 'name'
 
     return (
-        <div className='nav-submenu-container'>
+        <div className='nav-submenu-container' data-ignore-click >
             <p className='nav-selector-title'>Channel Selector</p>
             <div className='nav-channels-selector'>
                 {/* Static "all" channel */}
@@ -352,7 +359,7 @@ function AuthorSelector() {
         .sort((a, b) => a.Name.localeCompare(b.Name));
 
     return (
-        <div className='nav-submenu-container'>
+        <div className='nav-submenu-container' data-ignore-click >
             <p className='nav-selector-title'>Author Selector</p>
             <div className='nav-authors-selector'>
                 {/* Map the sorted channels */}
@@ -381,13 +388,9 @@ function AuthorItem({ Name, Url }) {
         if (!hasPosts) return
 
         if (formatUsername(selectedUser) == formatUsername(Name)) {
-            console.log("resetting user")
-            console.log(selectedUser, Name)
             setSelectedUser(null)
         }
         else {
-            console.log("setting user to", Name)
-            console.log(selectedUser, Name)
             setSelectedUser(Name)
         }
     }
@@ -410,17 +413,66 @@ function AuthorItem({ Name, Url }) {
 }
 
 function FilterSelector() {
+    const { filterManager } = useNavbarContext();
+    const curDateFilter = filterManager.getCurrentFilterState("Date");
+
+    const dateRangeStatus = formatFilterName(filterManager.getCurrentFilterState("DateRange")) ?? "All Time"
+
+    const handleFilterChange = (filterName, filterValue) => {
+        filterManager.setFilter(filterName, filterValue);
+    };
+
     return (
-        <div className='nav-filter-selector'>
-            Filter Selector
+        <div className="nav-submenu-container" data-ignore-click>
+            <div className="nav-filter-selector">
+                {/* Date Order Filtering */}
+                <div
+                    className={`specific-filter-item ${curDateFilter === "newest" ? "active" : ""
+                        }`}
+                    onClick={() => handleFilterChange("Date", "newest")}
+                >
+                    Newest
+                </div>
+                <div
+                    className={`specific-filter-item ${curDateFilter === "oldest" ? "active" : ""
+                        }`}
+                    onClick={() => handleFilterChange("Date", "oldest")}
+                >
+                    Oldest
+                </div>
+
+                <div className="specific-filter-divider"></div>
+
+                {/* Date Range Filter */}
+                <div className="specific-filter-item filter-dropping" >
+                    <div className='filter-status'>{dateRangeStatus} <ChevronDownIcon size={12} /></div>
+                    <div className="filter-dropdown-menu" >
+                        <div className="filter-dropdown-item" onClick={() => handleFilterChange("DateRange", "past_week")}>Past Week</div>
+                        <div className="filter-dropdown-item" onClick={() => handleFilterChange("DateRange", "past_month")}>Past Month</div>
+                        <div className="filter-dropdown-item" onClick={() => handleFilterChange("DateRange", "past_year")}>Past Year</div>
+                        <div className="filter-dropdown-item" onClick={() => handleFilterChange("DateRange", null)}>All Time</div>
+                    </div>
+                </div>
+
+                {/* Expired Filter */}
+                <div className={`specific-filter-item filter-dropping`} >
+                    <div className='filter-status'>Include Expired <ChevronDownIcon size={12} /></div>
+                    <div className="filter-dropdown-menu" >
+                        <div className="filter-dropdown-item" onClick={() => handleFilterChange("Expired", null)}>Include Expired</div>
+                        <div className="filter-dropdown-item" onClick={() => handleFilterChange("Expired", "hide_expired")}>Hide Expired</div>
+                    </div>
+                </div>
+            </div>
         </div>
-    )
+    );
 }
 
 function Searchbar() {
     return (
-        <div className='nav-Searchbar'>
-            Searchbar
+        <div className='nav-submenu-container' data-ignore-click >
+            <div className='nav-Searchbar'>
+                Searchbar
+            </div>
         </div>
     )
 }
