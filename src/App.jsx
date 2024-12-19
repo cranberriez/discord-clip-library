@@ -1,5 +1,5 @@
-import React, { useEffect, useState, useMemo, useRef } from 'react';
-import { filter, throttle } from 'lodash';
+import React, { useEffect, useState, useMemo, useRef, Suspense } from 'react';
+// import { throttle } from 'lodash';
 import debounce from 'lodash.debounce';
 
 import { usePosterCountsFactory } from './hooks/usePosterCountsFactory';
@@ -299,6 +299,18 @@ function App() {
             }
         }
     }, [clipId, selectedChannel, filteredVideos]);
+
+    // Lodash Throttle replacement
+    function throttle(func, delay) {
+        let lastCall = 0;
+        return function (...args) {
+            const now = Date.now();
+            if (now - lastCall >= delay) {
+                lastCall = now;
+                return func(...args);
+            }
+        };
+    }
 
     // Visibility tracking
     useEffect(() => {

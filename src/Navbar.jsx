@@ -6,7 +6,6 @@ import { faBars, faFilm, faHeart, faGear, faArrowRightFromBracket, faAt, faHasht
 import { SettingsMenuIcon, SearchIcon, XMarkIcon, ChevronDownIcon } from '@vidstack/react/icons';
 
 import './css/Navbar.css';
-import { filter } from 'lodash';
 
 const NavbarContext = createContext();
 
