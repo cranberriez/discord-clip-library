@@ -1,0 +1,21 @@
+{
+  "message": "Access granted",
+  "user": {
+    "accent_color": 16732928,
+    "avatar": "d64e8bc57c371ae6f172de5e29f6bfb8",
+    "avatar_decoration_data": null,
+    "banner": "db8aef498579369a1c2251fc9c399d95",
+    "banner_color": "#ff5300",
+    "clan": null,
+    "discriminator": "0",
+    "flags": 4194880,
+    "global_name": "Jacob",
+    "id": "237391552698122242",
+    "locale": "en-US",
+    "mfa_enabled": true,
+    "premium_type": 2,
+    "primary_guild": null,
+    "public_flags": 4194880,
+    "username": "_jacob__"
+  }
+}

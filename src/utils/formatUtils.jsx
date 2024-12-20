@@ -117,6 +117,21 @@ function formatFilterName(filterName) {
     return splitName.join(" ")
 }
 
+function intToHexColor(intColor) {
+    if (typeof intColor !== 'number') {
+        console.warn(`Invalid color value: ${intColor}. Returning default color.`);
+        return '#FFFFFF'; // Default to white if invalid
+    }
+
+    // Convert integer to hex, remove '0x' if present, and pad with zeros if necessary
+    let hex = intColor.toString(16).toUpperCase();
+
+    // Ensure the hex string is at least 6 characters long
+    hex = hex.padStart(6, '0');
+
+    return `#${hex}`;
+}
+
 export {
     capitalizeFirstLetter,
     formatUsername,
@@ -125,5 +140,6 @@ export {
     formatChannelName,
     formatTime,
     stringToHex,
-    formatFilterName
+    intToHexColor,
+    formatFilterName,
 };

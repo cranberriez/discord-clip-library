@@ -37,14 +37,64 @@ const defaultOptions = {
         }
     },
     channelId: {
-        default: null, // No channel selected by default
+        default: null,
         type: "filter",
+        matchStrategy: "exact",
     },
     Poster: {
-        default: null, // No user selected by default
+        default: null,
         type: "filter",
+        matchStrategy: "exact",
     },
+    Search: {
+        default: null,
+        type: "filter",
+        matchStrategy: "includes",
+    }
 };
+
+// Helper functions
+// Similarity function (ensure it's included)
+function levenshteinDistanceOptimized(a, b) {
+    if (a.length === 0) return b.length;
+    if (b.length === 0) return a.length;
+
+    if (a.length > b.length) {
+        [a, b] = [b, a];
+    }
+
+    let previousRow = Array(a.length + 1).fill(0);
+    for (let i = 0; i <= a.length; i++) {
+        previousRow[i] = i;
+    }
+
+    for (let j = 1; j <= b.length; j++) {
+        let currentRow = [j];
+        for (let i = 1; i <= a.length; i++) {
+            if (b[j - 1] === a[i - 1]) {
+                currentRow.push(previousRow[i - 1]);
+            } else {
+                currentRow.push(1 + Math.min(
+                    previousRow[i],
+                    currentRow[i - 1],
+                    previousRow[i - 1]
+                ));
+            }
+        }
+        previousRow = currentRow;
+    }
+
+    return previousRow[a.length];
+}
+
+function similarity(a, b) {
+    if (!a && !b) return 1;
+    if (!a || !b) return 0;
+
+    const distance = levenshteinDistanceOptimized(a.toLowerCase(), b.toLowerCase());
+    const maxLength = Math.max(a.length, b.length);
+    return maxLength === 0 ? 1 : 1 - distance / maxLength;
+}
 
 class FilterManager {
     constructor(options) {
@@ -100,6 +150,18 @@ class FilterManager {
         }
     }
 
+    // Returns any filter that is different from its default
+    getChangedFilters() {
+        const changedFilters = {};
+        for (const [key, currentValue] of Object.entries(this.currentFilters)) {
+            const defaultValue = this.defaultFilters[key];
+            if (currentValue !== defaultValue) {
+                changedFilters[key] = currentValue;
+            }
+        }
+        return changedFilters;
+    }
+
     // Set a specific filter value
     setFilter(filterName, filterValue) {
         // Validate the filter name and value
@@ -144,32 +206,56 @@ class FilterManager {
             if (!filterConfig || filterValue == null) continue;
 
             if (filterConfig.type === "filter") {
-                if (!filterConfig.options) {
-                    filters.push((item) => item[filterName] === filterValue);
-                    console.log(filterName, filterValue)
+                const filterOption = filterConfig.options?.[filterValue];
+                if (typeof filterOption === "function") {
+                    // If the option is a function, execute it to get the actual filter function
+                    filters.push(filterOption());
                 } else {
-                    const filterFn = filterConfig.options?.[filterValue];
-                    if (filterFn) {
-                        filters.push(filterFn());
-                    }
+                    // Otherwise, use default matching logic
+                    filters.push((item) => this.matchItem(item, filterName, filterValue, filterConfig.matchStrategy));
                 }
             } else if (filterConfig.type === "sort") {
                 sortFunction = filterConfig.options?.[filterValue];
             }
         }
 
-        // Apply all filters
         const filteredData = baseData.filter((item) =>
             filters.every((filterFn) => filterFn(item))
         );
 
-        // Apply sorting if applicable
         if (sortFunction) {
             filteredData.sort(sortFunction);
         }
 
         return filteredData;
     }
+
+    // Matching logic based on matchStrategy
+    matchItem(item, filterName, filterValue, strategy) {
+        if (filterName === "Search") {
+            // Normalize Filename and Description
+            const filename = (item.Filename || "").replace(/_/g, ' ').toLowerCase();
+            const description = (item.Description || "").toLowerCase();
+            const query = filterValue.toLowerCase();
+
+            if (strategy === "includes") {
+                // Check if query is a substring of Filename or Description
+                return filename.includes(query) || description.includes(query);
+            }
+        }
+
+        const fieldValue = item[filterName];
+
+        if (strategy === "exact") {
+            return fieldValue === filterValue;
+        } else if (strategy === "fuzzy") {
+            return similarity(filterValue, fieldValue || "") >= 0.8;
+        } else if (strategy === "includes") {
+            return (fieldValue || "").toLowerCase().includes(filterValue.toLowerCase());
+        }
+        return false;
+    }
+
 }
 
 export default FilterManager;

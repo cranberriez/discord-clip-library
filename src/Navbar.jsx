@@ -1,9 +1,9 @@
 import React, { createContext, useContext, useEffect, useState, useRef } from 'react';
-import { formatChannelName, formatUsername, stringToHex, formatFilterName } from './utils/formatUtils';
+import { formatChannelName, formatUsername, stringToHex, formatFilterName, intToHexColor } from './utils/formatUtils';
 
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faBars, faFilm, faHeart, faGear, faArrowRightFromBracket, faAt, faHashtag } from '@fortawesome/free-solid-svg-icons';
-import { SettingsMenuIcon, SearchIcon, XMarkIcon, ChevronDownIcon } from '@vidstack/react/icons';
+import { SettingsMenuIcon, SearchIcon, XMarkIcon, ChevronDownIcon, TimerIcon } from '@vidstack/react/icons';
 
 import './css/Navbar.css';
 
@@ -17,12 +17,15 @@ const NavbarProvider = ({ children, value }) => (
 
 const useNavbarContext = () => useContext(NavbarContext);
 
-function Navbar({ filterManager, CHANNELS, selectedChannel, setSelectedChannel, userIcons, selectedUser, setSelectedUser, getPosterCounts }) {
+function Navbar({ loggedUserInfo, filterManager, CHANNELS, selectedChannel, setSelectedChannel, userIcons, selectedUser, setSelectedUser, getPosterCounts }) {
     // Navbar state
     const [isUserVisible, setIsUserVisible] = useState(false);
     const [activeMenu, setActiveMenu] = useState(null);
     const [isTouchDevice, setIsTouchDevice] = useState(false);
     const [divWidth, setDivWidth] = useState(0);
+
+    // Searchbar State
+    const [searchValue, setSearchValue] = useState('');
 
     const selectedUserName = formatUsername(selectedUser) ?? "everyone"
     const selectedChannelName = formatChannelName(CHANNELS[selectedChannel]?.name ?? selectedChannel);
@@ -34,12 +37,13 @@ function Navbar({ filterManager, CHANNELS, selectedChannel, setSelectedChannel, 
     const navbarRef = useRef(null);
 
     // Navbar Constants
-    const menus = [
-        { component: <ChannelSelector /> },
-        { component: <AuthorSelector /> },
-        { component: <FilterSelector /> },
-        { component: <Searchbar /> },
-    ]
+    const menus = {
+        "channel": { component: <ChannelSelector /> },
+        "author": { component: <AuthorSelector /> },
+        "filter": { component: <FilterSelector /> },
+        "search": { component: <Searchbar /> },
+        "settings": { component: <Settings /> }
+    }
 
     // Close menus if clicking outside
     useEffect(() => {
@@ -113,6 +117,7 @@ function Navbar({ filterManager, CHANNELS, selectedChannel, setSelectedChannel, 
     // Context Available Vars
     const contextValue = {
         filterManager,
+        loggedUserInfo,
         // Created State / Consts
         isUserVisible,
         setIsUserVisible,
@@ -128,7 +133,10 @@ function Navbar({ filterManager, CHANNELS, selectedChannel, setSelectedChannel, 
         setSelectedChannel,
         userIcons,
         selectedUser,
-        setSelectedUser
+        setSelectedUser,
+        // Searchbar
+        searchValue,
+        setSearchValue
     }
 
     return (
@@ -154,9 +162,45 @@ function Navbar({ filterManager, CHANNELS, selectedChannel, setSelectedChannel, 
                     >
                         {menus?.[activeMenu].component}
                     </div>}
+                <ModifiedFilterChips />
             </div>
         </NavbarProvider>
     );
+}
+
+function ModifiedFilterChips() {
+    const { activeMenu, filterManager } = useNavbarContext();
+
+    const chipIcons = {
+        "Search": (<SearchIcon size={24} />),
+        "DateRange": (<TimerIcon size={24} />),
+        "Expired": (<TimerIcon size={24} />)
+    }
+
+    const modifiedFilters = filterManager.getChangedFilters();
+
+    return (
+        <>
+            {!["filter", "search"].includes(activeMenu) && <div className='modified-filters-container'>
+                {Object.entries(modifiedFilters).map(([key, value]) =>
+                (
+                    <div className='modified-filter-chip'>
+                        {
+                            chipIcons?.[key] ?? <></>
+                        }
+                        <p>{formatFilterName(value)}</p>
+                        <button
+                            className='reset-modified-filter'
+                            onClick={() => filterManager.resetFilter(key)}
+                        >
+                            <XMarkIcon size={18} />
+                        </button>
+                    </div>
+                )
+                )}
+            </div>}
+        </>
+    )
 }
 
 // USER MENU
@@ -191,16 +235,30 @@ function MenuButton({ iconUrl, toggleUserMenu }) {
 }
 
 function UserButton({ toggleUserMenu }) {
+    const { loggedUserInfo } = useNavbarContext();
+
+    const user = loggedUserInfo.user
+    const avatarURL = `https://cdn.discordapp.com/avatars/${user.id}/${user.avatar}.png`;
+    const displayName = user.global_name || user.username;
+    const userColor = intToHexColor(user.accent_color)
+    const bannerColor = user.banner_color
+
     return (
         <div className='nav-piece user-piece' onClick={() => toggleUserMenu()}>
             <div className='nav-user-dtls'>
                 <p className='nav-lia'>Logged In As</p>
-                <p className='nav-liu'>__jacob__</p>
+                <p
+                    className='nav-liu'
+                >
+                    {displayName}
+                </p>
             </div>
-            <div className='nav-user-icon-cont'>
-                <div className='nav-user-icon-dummy'>
-                    ?
-                </div>
+            <div className='nav-user-icon-cont'
+                style={{
+                    backgroundColor: `${userColor}80`
+                }}
+            >
+                <img src={avatarURL} />
             </div>
         </div>
     )
@@ -210,9 +268,9 @@ function UserMenuDropdown() {
     return (
         <div className='num-dropdown'>
             <ul>
-                <UMDropdownItem iconUrl={faFilm} text={"Your Videos"}> </UMDropdownItem>
+                <UMDropdownItem iconUrl={faFilm} text={"Your Videos"} menuId={"myVideos"}> </UMDropdownItem>
                 <UMDropdownItem iconUrl={faHeart} text={"Liked Videos"} > </UMDropdownItem>
-                <UMDropdownItem iconUrl={faGear} text={"Settings"} > </UMDropdownItem>
+                <UMDropdownItem iconUrl={faGear} text={"Settings"} menuId={"settings"}> </UMDropdownItem>
                 <UMDropdownItem iconUrl={faArrowRightFromBracket} text={"Sign Out"} > </UMDropdownItem>
             </ul>
         </div>
@@ -248,11 +306,11 @@ function MainMenu() {
 
             <AuthorMenu clickEvent={handleNavSelect} selectedUserName={selectedUserName} />
 
-            <div className={`nav-piece nav-button ${activeMenu === 2 ? 'active' : ''}`} onClick={() => handleNavSelect(2)} >
+            <div className={`nav-piece nav-button ${activeMenu === "filter" ? 'active' : ''}`} onClick={() => handleNavSelect("filter")} >
                 <SettingsMenuIcon size={40} />
             </div>
 
-            <div className={`nav-piece nav-button ${activeMenu === 3 ? 'active' : ''}`} onClick={() => handleNavSelect(3)} >
+            <div className={`nav-piece nav-button ${activeMenu === "search" ? 'active' : ''}`} onClick={() => handleNavSelect("search")} >
                 <SearchIcon size={40} />
             </div>
         </div>
@@ -263,7 +321,7 @@ function MenuCloseButton() {
     const { activeMenu, setActiveMenu } = useNavbarContext();
 
     const handleClose = () => {
-        if (activeMenu >= 0) {
+        if (activeMenu) {
             setActiveMenu(null)
         }
     }
@@ -279,7 +337,10 @@ function ChannelMenu({ clickEvent, selectedChannelName }) {
     const { activeMenu } = useNavbarContext();
 
     return (
-        <div className={`nav-piece nav-channel-button nav-icon-text ${activeMenu === 0 ? 'active' : ''}`} id='channel-nav-cont' onClick={() => clickEvent(0)} data-ignore-click >
+        <div
+            className={`nav-piece nav-channel-button nav-icon-text ${activeMenu === "channel" ? 'active' : ''}`}
+            id='channel-nav-cont' onClick={() => clickEvent("channel")} data-ignore-click
+        >
             <FontAwesomeIcon icon={faHashtag} />
             <p>{selectedChannelName}</p>
         </div>
@@ -290,7 +351,10 @@ function AuthorMenu({ clickEvent, selectedUserName }) {
     const { activeMenu } = useNavbarContext();
 
     return (
-        <div className={`nav-piece nav-channel-button nav-icon-text ${activeMenu === 1 ? 'active' : ''}`} id='author-nav-cont' onClick={() => clickEvent(1)} data-ignore-click >
+        <div
+            className={`nav-piece nav-channel-button nav-icon-text ${activeMenu === "author" ? 'active' : ''}`}
+            id='author-nav-cont' onClick={() => clickEvent("author")} data-ignore-click
+        >
             <FontAwesomeIcon icon={faAt} />
             <p>{selectedUserName}</p>
         </div>
@@ -416,6 +480,7 @@ function FilterSelector() {
     const curDateFilter = filterManager.getCurrentFilterState("Date");
 
     const dateRangeStatus = formatFilterName(filterManager.getCurrentFilterState("DateRange")) ?? "All Time"
+    const expiredStatus = formatFilterName(filterManager.getCurrentFilterState("Expired")) ?? "Include Expired"
 
     const handleFilterChange = (filterName, filterValue) => {
         filterManager.setFilter(filterName, filterValue);
@@ -455,7 +520,7 @@ function FilterSelector() {
 
                 {/* Expired Filter */}
                 <div className={`specific-filter-item filter-dropping`} >
-                    <div className='filter-status'>Include Expired <ChevronDownIcon size={12} /></div>
+                    <div className='filter-status'>{expiredStatus} <ChevronDownIcon size={12} /></div>
                     <div className="filter-dropdown-menu" >
                         <div className="filter-dropdown-item" onClick={() => handleFilterChange("Expired", null)}>Include Expired</div>
                         <div className="filter-dropdown-item" onClick={() => handleFilterChange("Expired", "hide_expired")}>Hide Expired</div>
@@ -466,14 +531,65 @@ function FilterSelector() {
     );
 }
 
+// function Searchbar() {
+//     return (
+//         <div className='nav-submenu-container' data-ignore-click >
+//             <div className='nav-Searchbar'>
+//                 Searchbar
+//             </div>
+//         </div>
+//     )
+// }
+
 function Searchbar() {
+    const { filterManager, searchValue, setSearchValue } = useNavbarContext();
+
+
+    const clearSearch = () => {
+        setSearchValue("")
+        filterManager.setFilter("Search", null)
+    }
+
+    const onSearch = (query) => {
+        if (query.length === 0) {
+            filterManager.setFilter("Search", null);
+        } else {
+            filterManager.setFilter("Search", query);
+        }
+    };
+
+    useEffect(() => {
+        const handler = setTimeout(() => {
+            onSearch(searchValue);
+        }, 300); // 500ms debounce delay
+
+        return () => {
+            clearTimeout(handler);
+        };
+    }, [searchValue]);
+
     return (
-        <div className='nav-submenu-container' data-ignore-click >
-            <div className='nav-Searchbar'>
-                Searchbar
+        <div className='nav-submenu-container searchbar-container' data-ignore-click>
+            <div className='nav-searchbar'>
+                <input
+                    type="text"
+                    value={searchValue}
+                    onChange={(e) => setSearchValue(e.target.value)}
+                    placeholder="Search..."
+                />
+                <button
+                    className={`${searchValue ? "active" : ""}`}
+                    onClick={() => clearSearch()}
+                >
+                    Clear
+                </button>
             </div>
         </div>
-    )
+    );
+}
+
+function Settings() {
+    return (<></>)
 }
 
 export default Navbar;
