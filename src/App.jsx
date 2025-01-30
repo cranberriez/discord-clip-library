@@ -1,34 +1,27 @@
-// src/App.jsx
 import React, { useEffect, useState } from 'react';
 import {
     BrowserRouter as Router,
     Routes,
     Route,
-    Navigate
+    Navigate,
+    useNavigate
 } from 'react-router-dom';
 
 import Login from './routes/Login';
-import Main from './routes/Main';
+import Home from './routes/Home';
 
-/**
- * The top-level App component now acts as a "Router" that decides
- * whether the user sees the <Login /> page or the <MainApp /> page.
- */
 function App() {
     const [loggedUserInfo, setLoggedUserInfo] = useState(null);
     const [loadingAuth, setLoadingAuth] = useState(true);
 
     useEffect(() => {
-        // Attempt to fetch the currently logged-in user info
-        // (You may change this URL to match your Flask endpoint, e.g. /me)
         const fetchLoggedUserData = async () => {
             try {
-                const response = await fetch('/me');
+                const response = await fetch('/api/me');
                 if (response.ok) {
                     const data = await response.json();
                     setLoggedUserInfo(data);
                 } else {
-                    // Not logged in, or request failed
                     setLoggedUserInfo(null);
                 }
             } catch (error) {
@@ -42,6 +35,21 @@ function App() {
         fetchLoggedUserData();
     }, []);
 
+    const handleLogout = async () => {
+        try {
+            const response = await fetch('/logout', {
+                method: 'POST',
+            });
+            if (response.ok) {
+                setLoggedUserInfo(null); // Clear the logged-in user info
+            } else {
+                console.error('Logout failed:', response.statusText);
+            }
+        } catch (error) {
+            console.error('Error during logout:', error);
+        }
+    };
+
     if (loadingAuth) {
         return (
             <div style={{ textAlign: 'center', marginTop: '2rem' }}>
@@ -53,10 +61,6 @@ function App() {
     return (
         <Router>
             <Routes>
-                {/* 
-          If user is logged in, go to Main.
-          Otherwise, go to Login.
-        */}
                 <Route
                     path="/login"
                     element={
@@ -65,20 +69,12 @@ function App() {
                             : <Login />
                     }
                 />
-
-                {/* <Route
-                    path="/*"
-                    element={
-                        loggedUserInfo
-                            ? <Main loggedUserInfo={loggedUserInfo} />
-                            : <Navigate to="/login" replace />
-                    }
-                /> */}
-
                 <Route
                     path="/*"
                     element={
-                        <Main loggedUserInfo={loggedUserInfo} />
+                        loggedUserInfo
+                            ? <Home loggedUserInfo={loggedUserInfo} onLogout={handleLogout} />
+                            : <Navigate to="/login" replace />
                     }
                 />
             </Routes>

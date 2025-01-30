@@ -17,7 +17,7 @@ const NavbarProvider = ({ children, value }) => (
 
 const useNavbarContext = () => useContext(NavbarContext);
 
-function Navbar({ loggedUserInfo, filterManager, CHANNELS, selectedChannel, setSelectedChannel, userIcons, selectedUser, setSelectedUser, getPosterCounts }) {
+function Navbar({ loggedUserInfo, filterManager, CHANNELS, selectedChannel, setSelectedChannel, userIcons, selectedUser, setSelectedUser, getPosterCounts, onLogout }) {
     // Navbar state
     const [isUserVisible, setIsUserVisible] = useState(false);
     const [activeMenu, setActiveMenu] = useState(null);
@@ -134,6 +134,7 @@ function Navbar({ loggedUserInfo, filterManager, CHANNELS, selectedChannel, setS
         userIcons,
         selectedUser,
         setSelectedUser,
+        onLogout,
         // Searchbar
         searchValue,
         setSearchValue
@@ -205,7 +206,7 @@ function ModifiedFilterChips() {
 
 // USER MENU
 function UserMenu({ reference }) {
-    const { isUserVisible, setIsUserVisible, setActiveMenu } = useNavbarContext();
+    const { isUserVisible, setIsUserVisible, setActiveMenu, onLogout } = useNavbarContext();
 
     const handleToggleMenu = () => {
         setActiveMenu(null)
@@ -221,7 +222,7 @@ function UserMenu({ reference }) {
             <MenuButton iconUrl={faBars} toggleUserMenu={handleToggleMenu} />
             <UserButton toggleUserMenu={handleToggleMenu} />
 
-            {isUserVisible && <UserMenuDropdown />}
+            {isUserVisible && <UserMenuDropdown onLogout={onLogout} />}
         </div>
     )
 }
@@ -264,22 +265,22 @@ function UserButton({ toggleUserMenu }) {
     )
 }
 
-function UserMenuDropdown() {
+function UserMenuDropdown({ onLogout }) {
     return (
         <div className='num-dropdown'>
             <ul>
                 <UMDropdownItem iconUrl={faFilm} text={"Your Videos"} menuId={"myVideos"}> </UMDropdownItem>
                 <UMDropdownItem iconUrl={faHeart} text={"Liked Videos"} > </UMDropdownItem>
                 <UMDropdownItem iconUrl={faGear} text={"Settings"} menuId={"settings"}> </UMDropdownItem>
-                <UMDropdownItem iconUrl={faArrowRightFromBracket} text={"Sign Out"} > </UMDropdownItem>
+                <UMDropdownItem iconUrl={faArrowRightFromBracket} text={"Sign Out"} event={onLogout}> </UMDropdownItem>
             </ul>
         </div>
     )
 }
 
-function UMDropdownItem({ iconUrl, text }) {
+function UMDropdownItem({ iconUrl, text, event }) {
     return (
-        <button className='num-item'>
+        <button className='num-item' onClick={event}>
             <FontAwesomeIcon icon={iconUrl} />
             <p>{text}</p>
         </button>

@@ -78,7 +78,7 @@ const baseRoute = "" // aka #
 // Filter Management
 const filterManager = new FilterManager(defaultOptions);
 
-function Main() {
+function Home({ loggedUserInfo, onLogout }) {
     const itemsPerPage = 50;
     const isDevelopment = import.meta.env.MODE === 'development';
 
@@ -96,13 +96,13 @@ function Main() {
     const [selectedChannel, setSelectedChannel] = useState("all"); // need to fix to allow null
 
     // Logged In User state
-    const [loggedUserInfo, setLoggedUserInfo] = useState(null)
+    // const [loggedUserInfo, setLoggedUserInfo] = useState(null)
 
     // Loading states
     const [videosLoading, setVideosLoading] = useState(true);
     const [iconsLoading, setIconsLoading] = useState(true);
     const [runtimesLoading, setRuntimesLoading] = useState(false);
-    const [loggedUserDataLoading, setLoggedUserDataLoading] = useState(true);
+    // const [loggedUserDataLoading, setLoggedUserDataLoading] = useState(false);
 
     // Current playing video / skip to video
     const [activeVideo, setActiveVideo] = useState(null);
@@ -191,30 +191,30 @@ function Main() {
     }, []);
 
     // Logged User Data
-    useEffect(() => {
-        const fetchLoggedUserData = async () => {
-            try {
-                const url = isDevelopment
-                    ? `${baseRoute}/me.json`
-                    : '/me';
+    // useEffect(() => {
+    //     const fetchLoggedUserData = async () => {
+    //         try {
+    //             const url = isDevelopment
+    //                 ? `${baseRoute}/me.json`
+    //                 : '/api/me';
 
-                const response = await fetch(url);
-                if (!response.ok) {
-                    throw new Error(`Failed to fetch logged in user data: ${response.statusText}`);
-                }
+    //             const response = await fetch(url);
+    //             if (!response.ok) {
+    //                 throw new Error(`Failed to fetch logged in user data: ${response.statusText}`);
+    //             }
 
-                const data = await response.json();
-                setLoggedUserInfo(data);
-                console.log(data)
-            } catch (error) {
-                console.error("Error fetching logged user data:", error);
-            } finally {
-                setLoggedUserDataLoading(false);
-            }
-        };
+    //             const data = await response.json();
+    //             setLoggedUserInfo(data);
+    //             console.log(data)
+    //         } catch (error) {
+    //             console.error("Error fetching logged user data:", error);
+    //         } finally {
+    //             setLoggedUserDataLoading(false);
+    //         }
+    //     };
 
-        fetchLoggedUserData();
-    }, []);
+    //     fetchLoggedUserData();
+    // }, []);
 
     // Apply filters when baseVideos or filters change
     useEffect(() => {
@@ -384,8 +384,10 @@ function Main() {
     // Loader fade-out
     useEffect(() => {
         if (!videosLoading && !iconsLoading && !runtimesLoading) {
-            const timeout = setTimeout(() => setShowLoader(false), 400);
-            return () => clearTimeout(timeout);
+            setShowLoader(false)
+
+            // const timeout = setTimeout(() => setShowLoader(false), 400);
+            // return () => clearTimeout(timeout);
         }
     }, [videosLoading, iconsLoading, runtimesLoading]);
 
@@ -404,6 +406,7 @@ function Main() {
                             userIcons={userIcons} filterManager={filterManager} loggedUserInfo={loggedUserInfo}
                             CHANNELS={CHANNELS} selectedChannel={selectedChannel} setSelectedChannel={setSelectedChannel}
                             selectedUser={selectedUser} setSelectedUser={setSelectedUser} getPosterCounts={getPosterCounts}
+                            onLogout={onLogout}
                         />
                     </div>
 
@@ -442,4 +445,4 @@ function Main() {
     );
 }
 
-export default Main;
+export default Home;

@@ -1,18 +1,12 @@
-// src/Login.jsx
 import React from 'react';
+import { useNavigate } from 'react-router-dom';
 
-/**
- * Simple placeholder login page
- */
 function Login() {
+    const navigate = useNavigate();
 
     const handleLogin = () => {
-        // 1. Redirect to your Flask OAuth flow, e.g.:
-        // window.location.href = "http://localhost:5000/auth/login";
-        //
-        // or
-        // 2. Call some login endpoint, e.g. fetch('/login') 
-        //    that sets an auth cookie, etc.
+        // Redirect to Flask's /authorize route to start the OAuth flow
+        window.location.href = "/authorize";
     };
 
     return (

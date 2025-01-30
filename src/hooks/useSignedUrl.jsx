@@ -1,6 +1,8 @@
 import { useEffect, useState } from "react";
 import { getSignedUrl } from "../utils/getSignedUrl";
 
+const baseRoute = "" // aka /
+
 const useSignedUrl = (id, dir, urlCache) => {
     const [signedUrl, setSignedUrl] = useState(null);
 
@@ -17,7 +19,7 @@ const useSignedUrl = (id, dir, urlCache) => {
             const fetchUrl = async () => {
                 try {
                     const url = await getSignedUrl(
-                        `/discord-clip-library/${dir}/${id}`,
+                        `${baseRoute}/${dir}/${id}`,
                         `${import.meta.env.BASE_URL}${dir}/${id}`
                     );
                     if (url) {
