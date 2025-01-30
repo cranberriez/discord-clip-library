@@ -228,23 +228,23 @@ function UserMenu({ reference }) {
 
 function MenuButton({ iconUrl, toggleUserMenu }) {
     return (
-        <div className='nav-piece nav-button' onClick={() => toggleUserMenu()}>
+        <button className='nav-piece nav-button' onClick={() => toggleUserMenu()}>
             <FontAwesomeIcon icon={iconUrl} />
-        </div>
+        </button>
     )
 }
 
 function UserButton({ toggleUserMenu }) {
     const { loggedUserInfo } = useNavbarContext();
 
-    const user = loggedUserInfo.user
+    const user = loggedUserInfo?.user || {};
     const avatarURL = `https://cdn.discordapp.com/avatars/${user.id}/${user.avatar}.png`;
-    const displayName = user.global_name || user.username;
-    const userColor = intToHexColor(user.accent_color)
-    const bannerColor = user.banner_color
+    const displayName = user ? user.global_name || user.username : "Unknown";
+    const userColor = user ? intToHexColor(user.accent_color) : "#ffffff";
+    const bannerColor = user ? user.banner_color : "#ffffff";
 
     return (
-        <div className='nav-piece user-piece' onClick={() => toggleUserMenu()}>
+        <button className='nav-piece user-piece' onClick={() => toggleUserMenu()}>
             <div className='nav-user-dtls'>
                 <p className='nav-lia'>Logged In As</p>
                 <p
@@ -260,7 +260,7 @@ function UserButton({ toggleUserMenu }) {
             >
                 <img src={avatarURL} />
             </div>
-        </div>
+        </button>
     )
 }
 
@@ -279,10 +279,10 @@ function UserMenuDropdown() {
 
 function UMDropdownItem({ iconUrl, text }) {
     return (
-        <li className='num-item'>
+        <button className='num-item'>
             <FontAwesomeIcon icon={iconUrl} />
             <p>{text}</p>
-        </li>
+        </button>
     )
 }
 
@@ -306,13 +306,13 @@ function MainMenu() {
 
             <AuthorMenu clickEvent={handleNavSelect} selectedUserName={selectedUserName} />
 
-            <div className={`nav-piece nav-button ${activeMenu === "filter" ? 'active' : ''}`} onClick={() => handleNavSelect("filter")} >
+            <button className={`nav-piece nav-button ${activeMenu === "filter" ? 'active' : ''}`} onClick={() => handleNavSelect("filter")} >
                 <SettingsMenuIcon size={40} />
-            </div>
+            </button>
 
-            <div className={`nav-piece nav-button ${activeMenu === "search" ? 'active' : ''}`} onClick={() => handleNavSelect("search")} >
+            <button className={`nav-piece nav-button ${activeMenu === "search" ? 'active' : ''}`} onClick={() => handleNavSelect("search")} >
                 <SearchIcon size={40} />
-            </div>
+            </button>
         </div>
     )
 }
@@ -327,9 +327,9 @@ function MenuCloseButton() {
     }
 
     return (
-        <div className='submenu-close-button' onClick={() => handleClose()}>
+        <button className='submenu-close-button' onClick={() => handleClose()}>
             <XMarkIcon size={24} />
-        </div>
+        </button>
     )
 }
 
@@ -337,13 +337,13 @@ function ChannelMenu({ clickEvent, selectedChannelName }) {
     const { activeMenu } = useNavbarContext();
 
     return (
-        <div
+        <button
             className={`nav-piece nav-channel-button nav-icon-text ${activeMenu === "channel" ? 'active' : ''}`}
             id='channel-nav-cont' onClick={() => clickEvent("channel")} data-ignore-click
         >
             <FontAwesomeIcon icon={faHashtag} />
             <p>{selectedChannelName}</p>
-        </div>
+        </button>
     )
 }
 
@@ -351,13 +351,13 @@ function AuthorMenu({ clickEvent, selectedUserName }) {
     const { activeMenu } = useNavbarContext();
 
     return (
-        <div
+        <button
             className={`nav-piece nav-channel-button nav-icon-text ${activeMenu === "author" ? 'active' : ''}`}
             id='author-nav-cont' onClick={() => clickEvent("author")} data-ignore-click
         >
             <FontAwesomeIcon icon={faAt} />
             <p>{selectedUserName}</p>
-        </div>
+        </button>
     )
 }
 
@@ -371,6 +371,7 @@ function ChannelSelector() {
 
     return (
         <div className='nav-submenu-container' data-ignore-click >
+            <MenuCloseButton />
             <p className='nav-selector-title'>Channel Selector</p>
             <div className='nav-channels-selector'>
                 {/* Static "all" channel */}
@@ -385,7 +386,6 @@ function ChannelSelector() {
                     />
                 ))}
             </div>
-            <MenuCloseButton />
         </div>
     );
 }
@@ -398,7 +398,7 @@ function ChannelItem({ channelID, channelInfo }) {
     const isSelected = (selectedChannel === channelID)
 
     return (
-        <div
+        <button
             className={`channels-item ${isSelected ? 'active' : ''}`}
             onClick={() => setSelectedChannel(channelID)}
         >
@@ -411,7 +411,7 @@ function ChannelItem({ channelID, channelInfo }) {
                 ># </span>
                 {formatChannelName(channelInfo.name)}
             </p>
-        </div>
+        </button>
     )
 }
 
@@ -423,6 +423,7 @@ function AuthorSelector() {
 
     return (
         <div className='nav-submenu-container' data-ignore-click >
+            <MenuCloseButton />
             <p className='nav-selector-title'>Author Selector</p>
             <div className='nav-authors-selector'>
                 {/* Map the sorted channels */}
@@ -434,7 +435,6 @@ function AuthorSelector() {
                     />
                 ))}
             </div>
-            <MenuCloseButton />
         </div>
     )
 }
@@ -490,20 +490,20 @@ function FilterSelector() {
         <div className="nav-submenu-container" data-ignore-click>
             <div className="nav-filter-selector">
                 {/* Date Order Filtering */}
-                <div
+                <button
                     className={`specific-filter-item ${curDateFilter === "newest" ? "active" : ""
                         }`}
                     onClick={() => handleFilterChange("Date", "newest")}
                 >
                     Newest
-                </div>
-                <div
+                </button>
+                <button
                     className={`specific-filter-item ${curDateFilter === "oldest" ? "active" : ""
                         }`}
                     onClick={() => handleFilterChange("Date", "oldest")}
                 >
                     Oldest
-                </div>
+                </button>
 
                 <div className="specific-filter-divider"></div>
 

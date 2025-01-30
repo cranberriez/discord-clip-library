@@ -1,3 +1,13 @@
+button {
+    font-family: inherit;
+    color: inherit;
+    text-align: left;
+    display: block;
+    width: auto;
+    height: auto;
+    background: inherit;
+}
+
 .fixed-nav-container {
     position: fixed;
     left: 0;
@@ -586,13 +596,15 @@
     padding: .5rem 1rem;
 }
 
-.filter-dropping:hover {
+.filter-dropping:hover,
+.filter-dropping:focus {
     border-radius: 5px 5px 0 0;
     background-color: var(--bg-light);
 }
 
 
-.filter-dropping:hover .filter-dropdown-menu {
+.filter-dropping:hover .filter-dropdown-menu,
+.filter-dropping:focus .filter-dropdown-menu {
     visibility: visible;
     /* Show dropdown when active */
     pointer-events: auto;
@@ -831,7 +843,7 @@
         border-radius: 0 5px 5px 5px;
     }
 
-    .num-dropdown ul li {
+    .num-dropdown .num-item {
         white-space: nowrap;
     }
 }

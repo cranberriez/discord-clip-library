@@ -62,6 +62,15 @@ const CHANNELS = {
         name: "Elden Ring",
         filepath: "filtered_messages_946788298096001094.json"
     },
+    "1040870367121657896": {
+        name: "Gmod"
+    },
+    "1314719992276713543": {
+        name: "Marvel Rivals"
+    },
+    "1309321497956974652": {
+        name: "Path of Exile"
+    }
 }
 
 // Filter Management
