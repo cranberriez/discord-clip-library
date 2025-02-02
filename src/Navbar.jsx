@@ -175,7 +175,9 @@ function ModifiedFilterChips() {
     const chipIcons = {
         "Search": (<SearchIcon size={24} />),
         "DateRange": (<TimerIcon size={24} />),
-        "Expired": (<TimerIcon size={24} />)
+        "Expired": (<TimerIcon size={24} />),
+        "channelId": (<FontAwesomeIcon icon={faHashtag} />),
+        "Poster": (<FontAwesomeIcon icon={faAt} />),
     }
 
     const modifiedFilters = filterManager.getChangedFilters();
@@ -238,11 +240,11 @@ function MenuButton({ iconUrl, toggleUserMenu }) {
 function UserButton({ toggleUserMenu }) {
     const { loggedUserInfo } = useNavbarContext();
 
-    const user = loggedUserInfo?.user || {};
+    const user = loggedUserInfo?.user ?? {};
     const avatarURL = `https://cdn.discordapp.com/avatars/${user.id}/${user.avatar}.png`;
-    const displayName = user ? user.global_name || user.username : "Unknown";
-    const userColor = user ? intToHexColor(user.accent_color) : "#ffffff";
-    const bannerColor = user ? user.banner_color : "#ffffff";
+    const displayName = user.global_name || user.username || "Unknown";
+    const userColor = intToHexColor(user.accent_color) || "#ffffff";
+    const bannerColor = user.banner_color || "#ffffff";
 
     return (
         <button className='nav-piece user-piece' onClick={() => toggleUserMenu()}>

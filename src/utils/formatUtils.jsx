@@ -109,7 +109,8 @@ function hslToHex(h, s, l) {
 function formatFilterName(filterName) {
     if (!filterName) return filterName
 
-    const splitName = filterName.split('_')
+    const shortName = filterName.length > 20 ? filterName.slice(0, 20) + "..." : filterName;
+    const splitName = shortName.split('_')
     for (let i = 0; i < splitName.length; i++) {
         const element = splitName[i];
         splitName[i] = capitalizeFirstLetter(element)

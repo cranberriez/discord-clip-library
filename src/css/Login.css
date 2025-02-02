@@ -1,0 +1,40 @@
+/* Center everything */
+.login-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100vh;
+    text-align: center;
+    background-color: var(--bg-default);
+    color: var(--text-light);
+}
+
+/* Style the login button */
+.discord-login {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background-color: #5865f2;
+    color: white;
+    border: none;
+    padding: 12px 20px;
+    font-size: 1.1rem;
+    font-weight: bold;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.3s ease-in-out;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
+}
+
+/* Add a hover effect */
+.discord-login:hover {
+    background-color: #4752c4;
+    box-shadow: 0 8px 12px rgba(0, 0, 0, 0.3);
+}
+
+/* Make the icon a bit bigger */
+.discord-icon {
+    font-size: 1.5rem;
+    color: var(--text-light);
+}

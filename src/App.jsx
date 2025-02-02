@@ -13,6 +13,7 @@ import Home from './routes/Home';
 function App() {
     const [loggedUserInfo, setLoggedUserInfo] = useState(null);
     const [loadingAuth, setLoadingAuth] = useState(true);
+    const isDevelopment = import.meta.env.MODE === 'development';
 
     useEffect(() => {
         const fetchLoggedUserData = async () => {
@@ -72,7 +73,7 @@ function App() {
                 <Route
                     path="/*"
                     element={
-                        loggedUserInfo
+                        isDevelopment || loggedUserInfo
                             ? <Home loggedUserInfo={loggedUserInfo} onLogout={handleLogout} />
                             : <Navigate to="/login" replace />
                     }
